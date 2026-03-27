@@ -9,17 +9,23 @@
 
 import os
 import re
-import pymysql
+import mysql.connector
+from mysql.connector import Error
+from dotenv import load_dotenv
 import openpyxl
 
 # ──────────────────────────────────────────────
-# DB 연결 정보
+# .env 로드 (conf/.env)
 # ──────────────────────────────────────────────
-DB_HOST     = 'localhost'
-DB_USER     = 'root'
-DB_PASSWORD = 'root1234!'
-DB_NAME     = 'car_db'
-DB_PORT     = 3306
+load_dotenv(os.path.join(os.path.dirname(__file__), '..', 'conf', '.env'))
+
+DB_CONFIG = {
+    'host'     : os.getenv('DB_HOST'),
+    'user'     : os.getenv('DB_USER'),
+    'passwd'   : os.getenv('DB_PASSWORD'),
+    'database' : os.getenv('DB_NAME'),
+    'port'     : int(os.getenv('DB_PORT', 3306)),
+}
 
 # ──────────────────────────────────────────────
 # 경로
@@ -98,15 +104,25 @@ def parse_sheet(ws, stat_ym: str) -> list[tuple]:
     """
     시트에서 유효 행만 파싱하여 INSERT용 튜플 리스트 반환
     튜플: (STAT_YM, FUEL_CD, TYPE_CD, USAGE_CD, REGION_CD, REG_CNT)
+    - 병합 셀 대응: 연료/차종 열이 None이면 직전 유효값 이월 사용
     """
     records = []
+    current_fuel_nm = ''
+    current_type_nm = ''
+
     for row in ws.iter_rows(values_only=True):
-        fuel_nm  = str(row[0]).strip() if row[0] else ''
-        type_nm  = str(row[1]).strip() if row[1] else ''
+        # 연료명: 값이 있으면 갱신, 없으면 이전 값 유지 (병합 셀 대응)
+        if row[0] and str(row[0]).strip():
+            current_fuel_nm = str(row[0]).strip()
+
+        # 차종명: 값이 있으면 갱신, 없으면 이전 값 유지 (병합 셀 대응)
+        if row[1] and str(row[1]).strip():
+            current_type_nm = str(row[1]).strip()
+
         usage_nm = str(row[2]).strip() if row[2] else ''
 
-        fuel_cd  = FUEL_MAP.get(fuel_nm)
-        type_cd  = TYPE_MAP.get(type_nm)
+        fuel_cd  = FUEL_MAP.get(current_fuel_nm)
+        type_cd  = TYPE_MAP.get(current_type_nm)
         usage_cd = USAGE_MAP.get(usage_nm)
 
         # 대상 연료·차종·용도가 아닌 행 (소계/계/헤더/빈행) 제외
@@ -170,16 +186,14 @@ def main():
     ])
     print(f'처리 대상 파일: {len(files)}개\n')
 
-    conn = pymysql.connect(
-        host=DB_HOST, user=DB_USER, password=DB_PASSWORD,
-        db=DB_NAME, port=DB_PORT, charset='utf8mb4',
-        autocommit=False
-    )
+    conn = mysql.connector.connect(**DB_CONFIG)
+    conn.autocommit = False
 
     try:
-        with conn.cursor() as cursor:
-            ensure_table(cursor)
-            conn.commit()
+        cursor = conn.cursor()
+        ensure_table(cursor)
+        conn.commit()
+        cursor.close()
 
         total_inserted = 0
         for fname in files:
@@ -204,15 +218,16 @@ def main():
                 print(f'[SKIP] 유효 데이터 없음: {fname}')
                 continue
 
-            with conn.cursor() as cursor:
-                cnt = batch_upsert(cursor, records)
+            cursor = conn.cursor()
+            cnt = batch_upsert(cursor, records)
+            cursor.close()
             conn.commit()
             total_inserted += cnt
             print(f'[OK] {fname}  →  {stat_ym}  ({cnt}건 처리)')
 
         print(f'\n완료: 총 {total_inserted}건 처리')
 
-    except Exception as e:
+    except Error as e:
         conn.rollback()
         print(f'[ERROR] {e}')
         raise
