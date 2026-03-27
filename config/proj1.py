@@ -22,7 +22,7 @@ selected = option_menu(
     menu_icon="cast",  # 전체 메뉴 아이콘
     orientation="horizontal"  # 가로 메뉴
 )
-
+#
 
 
 st.set_page_config(page_title="Option Menu 예제", layout="wide")
