@@ -113,3 +113,29 @@ VALUES
 -- FROM   TB_COMMON_CODE
 -- ORDER  BY CODE_GROUP, SORT_ORDER;
 
+
+-- ============================================================
+-- 연료별 차종별 용도별 지역별 등록현황 테이블 (TB_FUEL_REG_STAT)
+-- 원천: 자동차 등록자료 통계 > 10.연료별_등록현황 시트
+-- 대상 연료: 휘발유(F01) / 경유(F02) / 전기(F03)
+--            하이브리드(휘발유+전기)(F04) / 하이브리드(경유+전기)(F05)
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS TB_FUEL_REG_STAT (
+    STAT_YM    CHAR(6)     NOT NULL COMMENT '통계년월 (YYYYMM)',
+    FUEL_CD    VARCHAR(10) NOT NULL COMMENT '연료코드 (TB_COMMON_CODE FUEL 그룹)',
+    TYPE_CD    VARCHAR(10) NOT NULL COMMENT '차종코드 (TB_COMMON_CODE TYPE 그룹)',
+    USAGE_CD   VARCHAR(10) NOT NULL COMMENT '용도코드 (TB_COMMON_CODE USAGE 그룹)',
+    REGION_CD  VARCHAR(10) NOT NULL COMMENT '지역코드 (TB_COMMON_CODE REGION 그룹)',
+    REG_CNT    INT         NOT NULL DEFAULT 0 COMMENT '등록 대수 (하이픈은 0으로 처리)',
+    CREATED_AT DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성일시',
+    UPDATED_AT DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '수정일시',
+    PRIMARY KEY (STAT_YM, FUEL_CD, TYPE_CD, USAGE_CD, REGION_CD),
+    INDEX IDX_FUELSTAT_YM     (STAT_YM),
+    INDEX IDX_FUELSTAT_FUEL   (FUEL_CD),
+    INDEX IDX_FUELSTAT_REGION (REGION_CD)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci
+  COMMENT='연료별 차종별 용도별 지역별 등록현황';
+
