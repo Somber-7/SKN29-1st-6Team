@@ -1,3 +1,4 @@
 .vscode
 conf/.env
 ~*.xlsx
+__pycache__
