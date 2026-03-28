@@ -17,6 +17,36 @@ load_dotenv()
 st.set_page_config(page_title="Team 6", layout="wide")
 
 # ------------
+# 첫화면 이미지 css
+# ------------
+
+def inject_start_extra_css():
+    st.markdown("""
+    <style>
+    .start-badge {
+        display: inline-block;
+        background: #eef4fb;
+        color: #1f3b5b;
+        border-radius: 999px;
+        padding: 6px 12px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        margin-top: 20px;
+        margin-bottom: 18px;
+    }
+
+    .start-image-box {
+        background: white;
+        border: 1px solid #e6edf5;
+        border-radius: 24px;
+        padding: 18px;
+        box-shadow: 0 8px 20px rgba(31, 59, 91, 0.08);
+        margin-top: 20px;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+# ------------
 # header bar
 # ------------
 
@@ -108,6 +138,36 @@ def custom_success(message):
         unsafe_allow_html=True
     )
 
+# -------------
+# 메인 화면 카드
+# -------------
+def inject_card_css():
+    st.markdown("""
+    <style>
+    .st-key-main_card_1, .st-key-main_card_2, .st-key-main_card_3 {
+        background: white;
+        border: 1px solid #e8edf3;
+        border-radius: 16px;
+        padding: 18px 18px 12px 18px;
+        box-shadow: 9px 9px 5px rgba(31, 59, 91, 0.55);
+        margin-bottom: 10px;
+    }
+
+    .card-title {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: #1f3b5b;
+        margin-bottom: 6px;
+    }
+
+    .card-desc {
+        color: #5f6b7a;
+        font-size: 0.94rem;
+        margin-bottom: 12px;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
 # -----------
 # 세부 페이지 css
 # -----------
@@ -196,7 +256,9 @@ def inject_page_css():
 
 
 
-
+# -----------
+# 팀 소개 페이지
+# -----------
 
 def page_team():
     render_page_logo()
@@ -295,35 +357,7 @@ def page_team():
         """, unsafe_allow_html=True)
 
 
-# -------------
-# 메인 화면 카드
-# -------------
-def inject_card_css():
-    st.markdown("""
-    <style>
-    .st-key-main_card_1, .st-key-main_card_2, .st-key-main_card_3 {
-        background: white;
-        border: 1px solid #e8edf3;
-        border-radius: 16px;
-        padding: 18px 18px 12px 18px;
-        box-shadow: 9px 9px 5px rgba(31, 59, 91, 0.55);
-        margin-bottom: 10px;
-    }
 
-    .card-title {
-        font-size: 1.05rem;
-        font-weight: 700;
-        color: #1f3b5b;
-        margin-bottom: 6px;
-    }
-
-    .card-desc {
-        color: #5f6b7a;
-        font-size: 0.94rem;
-        margin-bottom: 12px;
-    }
-    </style>
-    """, unsafe_allow_html=True)
 
 # -----------------------
 # 상태 초기화
@@ -399,24 +433,54 @@ def render_top_nav():
 # 시작화면
 # -----------------------
 def page_start():
-    st.markdown(
-        "<h1 style='text-align:center; margin-top:150px;'>🚀 환영합니다!</h1>",
-        unsafe_allow_html=True,
-    )
-    st.markdown(
-        "<p style='text-align:center; font-size:20px; margin-bottom:50px;'>시작하려면 아래 버튼을 눌러주세요.</p>",
-        unsafe_allow_html=True,
-    )
-    _, col, _ = st.columns([1, 2, 1])
-    with col:
-        if st.button("세부 화면으로 들어가기", use_container_width=True):
+    inject_start_extra_css()
+    inject_page_css()
+    
+    left, right = st.columns([1.05,0.95], gap = "large")
+    with left:
+        st.markdown('<div class="start-image-box">', unsafe_allow_html=True)
+        st.image(
+            "config/assets/image/img_ex1.png",
+            use_container_width=True
+        )           
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    with right:
+        st.markdown('<div class="start-badge">Automotive Data Service</div>',
+                    unsafe_allow_html=True)
+        st.markdown("""
+        <div class="page-hero">
+            <div class="page-hero-title">
+                전국 자동차 등록 현황을<br>
+                더 직관적으로 탐색하는 서비스
+            </div>
+            <div class="page-hero-desc">
+                연료, 차종, 용도, 지역 기준으로 자동차 등록 데이터를
+                한눈에 이해하고 비교 서비스
+            </div>
+        </div>
+        """,unsafe_allow_html=True)
+        if st.button("서비스 시작하기", key="start_go_main",
+                     use_container_width=True):
             go_to("main")
+    
+    # st.markdown(
+    #     "<h1 style='text-align:center; margin-top:150px;'>🚀 환영합니다!</h1>",
+    #     unsafe_allow_html=True,
+    # )
+    # st.markdown(
+    #     "<p style='text-align:center; font-size:20px; margin-bottom:50px;'>시작하려면 아래 버튼을 눌러주세요.</p>",
+    #     unsafe_allow_html=True,
+    # )
+    # _, col, _ = st.columns([1, 2, 1])
+    # with col:
+    #     if st.button("세부 화면으로 들어가기", use_container_width=True):
+    #         go_to("main")
 
 
 # -----------------------
 # 메인화면
 # -----------------------
-
 def page_main():
     render_page_logo()
     render_header()
@@ -490,7 +554,7 @@ def page_main():
 
 
 # -------------------------
-# intro Section
+# 서비스 소개 페이지
 # -------------------------
 
 def page_intro():
