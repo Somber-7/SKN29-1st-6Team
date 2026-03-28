@@ -136,6 +136,30 @@ def inject_global_css():
         font-weight: 700;
         margin-bottom: 12px;
     }
+
+    / * version badge * /                        
+    .version-badge {
+        display: inline-block;
+        background: #eef4fb;
+        color: #1f3b5b;
+        border: 1px solid #d9e6f5;
+        border-radius: 999px;
+        padding: 6px 12px;
+        font-size: 0.84rem;
+        font-weight: 700;
+        margin-right: 8px;
+        margin-bottom: 10px;
+    }
+    
+    / * sidebar logo * /
+    .sidebar-logo {
+         color: #374151;
+        font-size: 15px;
+        font-weight: 1500;
+        letter-spacing: 1.2px;
+        margin-bottom: 14px;
+    }            
+    
     </style>
     """, unsafe_allow_html=True)
 
@@ -169,47 +193,54 @@ def custom_success(message: str):
 def render_header():
     st.markdown("""
         <div class="custom-header">
-            <h1>전국 자동차 등록 현황 대시보드</h1>
-            <p>자동차 등록 데이터를 직관적으로 탐색하고 비교하는 서비스</p>
+            <h1>전국 자동차 등록 현황과 유가 변동</h1>
+            <p>자동차 등록 데이터와 유가 변동을 탐색하고 비교하는 서비스</p>
         </div>
     """, unsafe_allow_html=True)
+    st.divider()
 
 def render_top_nav():
-    st.markdown("###")
-    with st.container(border=True):
-        col1, col2, col3, col4 = st.columns(4)
-
+    
+    with st.container(border=False):
+        col1, col2, col3, _,_,_,_,_,col4 = st.columns(9)
+        
         with col1:
-            with st.popover("⭐ 홈", use_container_width=True):
+            with st.popover("📌 홈", use_container_width=True):
                 # st.markdown("**홈 메뉴**")
-                if st.button("📋 서비스 소개", key="nav_home_1", use_container_width=True): go_to("intro")
-                if st.button("👥 팀 소개",     key="nav_home_2", use_container_width=True): go_to("team")
-                if st.button("⭐ ----",   key="nav_home_3", use_container_width=True): go_to("main")
+                if st.button("📘 서비스 소개",key="nav_home_1", use_container_width=True): go_to("intro")
+                if st.button("🗂️ 데이터 설명",   key="nav_home_2", use_container_width=True): go_to("data_guide")
+                if st.button("👥 팀 소개",  key="nav_home_3", use_container_width=True): go_to("team")
+                
 
         with col2:
-            with st.popover("ℹ️ 현황 조회", use_container_width=True):
+            with st.popover("ℹ️ 현황", use_container_width=True):
                 # st.markdown("**현황 조회**")
                 if st.button("📊 대시보드", key="nav_dash_1", use_container_width=True): go_to("dashboard")
-                if st.button("🔖 분석",     key="nav_dash_2", use_container_width=True): go_to("analysis")
+                if st.button("📈 분석",     key="nav_dash_2", use_container_width=True): go_to("analysis")
 
         with col3:
-            with st.popover("✉️ 문의", use_container_width=True):
+            with st.popover("🔔 문의", use_container_width=True):
                 # st.markdown("**문의하기**")
-                if st.button("📧 이메일 문의", key="nav_contact_1"): st.info("contact@example.com")
-                if st.button("📞 고객센터",    key="nav_contact_2"): st.info("02-1234-5678")
-                if st.button("❓ FAQ",          key="nav_contact_3"): st.info("FAQ 페이지")
-
+                if st.button("❓ FAQ", key="nav_contact_1", use_container_width=True): go_to("faq")
+                #if st.button("🖋️ 데이터 설명", key="nav_contact_2", use_container_width=True): st.info("02-1234-5678")
+                
+                # if st.button("📧 이메일 문의", key="nav_contact_1"): st.info("contact@example.com")
+                
         with col4:
-            if st.button("🏠 시작화면", use_container_width=True, key="go_start"):
-                go_to("start")
+            if st.button("🏠 Main", key="logo_to_main", use_container_width=True):
+                go_to("main")
+            # if st.button("🏠 시작화면", use_container_width=True, key="go_start"):
+            #     go_to("start")
 
 def render_page_top():
     """로고 + 헤더 + 네비게이션을 한 번에 렌더링"""
     col1, _ = st.columns([1, 9])
     with col1:
-        if st.button("🏠 Main", key="logo_to_main", type="tertiary"):
-            go_to("main")
-    st.markdown('<div class="page-logo">삼총사</div>', unsafe_allow_html=True)
+        #if st.button("🏠 Main", key="logo_to_main", type="tertiary"):
+        #    go_to("main")
+        if st.button("🏠 시작화면", use_container_width=True, key="go_start",type="tertiary"):
+                go_to("start")
+    #st.markdown('<div class="page-logo">Team 3</div>', unsafe_allow_html=True)
     render_header()
     render_top_nav()
 
@@ -226,10 +257,9 @@ def page_start():
     with right:
         st.markdown("""
         <div class="page-hero">
-            <div class="page-hero-title">전국 자동차 등록 현황</div>
+            <div class="page-hero-title">자동차 등록 현황<br>& 유가 변동</div>
             <div class="page-hero-desc">
-                연료, 차종, 용도, 지역 기준으로 자동차 등록 데이터를<br>
-                한눈에 이해하고 비교 서비스
+                메모
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -248,32 +278,37 @@ def page_main():
     col1, col2, col3 = st.columns(3)
     with col1:
         with st.container(key="main_card_1"):
-            st.markdown('<div class="card-title">📈 대시보드</div>', unsafe_allow_html=True)
-            st.markdown('<div class="card-desc">전체 현황과 주요 분포를 시각적으로 확인합니다.</div>', unsafe_allow_html=True)
+            st.markdown('<div class="card-title">📌 홈</div>', unsafe_allow_html=True)
+            st.markdown('<div class="card-desc">전반적인 서비스 개요와<br>데이터 및 팀 구성을 소개합니다.</div>', unsafe_allow_html=True)
     with col2:
         with st.container(key="main_card_2"):
-            st.markdown('<div class="card-title">🔎 분석페이지</div>', unsafe_allow_html=True)
-            st.markdown('<div class="card-desc">조건을 선택해 원하는 데이터를 조회합니다.</div>', unsafe_allow_html=True)
+            st.markdown('<div class="card-title">ℹ️ 현황</div>', unsafe_allow_html=True)
+            st.markdown('<div class="card-desc">조건에 대한 데이터 현황과<br>간단한 분석을 할 수 있습니다.</div>', unsafe_allow_html=True)
     with col3:
         with st.container(key="main_card_3"):
             st.markdown('<div class="card-title">❓ FAQ</div>', unsafe_allow_html=True)
-            st.markdown('<div class="card-desc">서비스 설명과 자주 묻는 질문을 확인합니다.</div>', unsafe_allow_html=True)
+            st.markdown('<div class="card-desc">자주 묻는 질문을<br>확인합니다.</div>', unsafe_allow_html=True)
 
 # -----------------------
 # 페이지: 서비스 소개
 # -----------------------
 def page_intro():
-    render_page_top()
+    col1, _ = st.columns([1, 9])
+    with col1:
+        if st.button("🏠 시작화면", use_container_width=True, key="go_start",type="tertiary"):
+                go_to("start")
 
     st.markdown("""
     <div class="page-hero">
         <div class="page-hero-title">📘 서비스 소개</div>
         <div class="page-hero-desc">
-            전국 자동차 등록 현황 데이터를 연료, 차종, 용도, 지역 기준으로
-            직관적으로 탐색하고 비교할 수 있도록 설계한 데이터 기반 서비스입니다.
+            전국 자동차 등록 현황과 유가 변동 데이터를 현황을 파악하고,
+            탐색할 수 있도록 설계한 데이터 기반 서비스입니다.
         </div>
     </div>
     """, unsafe_allow_html=True)
+
+    render_top_nav()
 
     col1, col2 = st.columns(2)
     with col1:
@@ -283,8 +318,8 @@ def page_intro():
             <div class="page-card-body">
                 자동차 등록 데이터는 다양한 기준으로 구성되어 있어 단순한 표 형태만으로는
                 전체 구조를 파악하기 어렵습니다.<br><br>
-                본 프로젝트는 이러한 데이터를 시각화 중심의 대시보드와 조건 기반 조회 기능으로
-                재구성하여, 사용자가 필요한 정보를 더 쉽고 빠르게 이해할 수 있도록 하는 것을 목표로 합니다.
+                본 프로젝트는 자동차 등록현황 데이터와 유가 변동 데이터를 함께 활용하여,
+                사용자가 전반적인 현황과 두 데이터 사이 관계를 보다 쉽게 이해할 수 있는 것을 목표로 합니다.<br><br><br><br>
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -295,8 +330,10 @@ def page_intro():
             <div class="page-card-body">
                 자동차 등록 현황 데이터는 항목 수가 많고 분류 기준이 다양해
                 원하는 정보를 직관적으로 찾기 어렵습니다.<br><br>
-                사용자는 특정 연료, 차종, 용도, 지역 기준으로 데이터를 비교하고 싶어도
-                이를 빠르게 확인하기 어려우며, 단순 수치 나열만으로는 한계가 있습니다.
+                또한 유가 변동은 차량 선택과 등록 흐름에 영향을 줄 수 있는 요인이지만,
+                이를 함께 비교하고 해석할 수 있는 서비스는 제한적입니다.<br><br>
+                따라서 본 서비스는 자동차 등록현황과 유가 가격을 함께 탐색할 수 있도록
+                돕는 사용자 친화적 정보 구조 시스템을 채택하고 있습니다.
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -305,8 +342,7 @@ def page_intro():
     <div class="page-card">
         <div class="page-card-title">🧭 서비스 방향성</div>
         <div class="page-card-body">
-            본 서비스는 단순한 데이터 나열이 아니라 <b>탐색 가능한 정보 서비스</b>를 지향합니다.
-            사용자가 원하는 조건을 선택하고, 그 결과를 직관적인 시각화와 함께 확인할 수 있도록 설계하였습니다.<br><br>
+            본 서비스는 사용자가 원하는 조건을 선택하고, 그 결과를 직관적인 시각화와 함께 확인할 수 있도록 설계하였습니다.<br><br>
             또한 전체 현황을 빠르게 이해할 수 있는 대시보드와 세부 조건별 탐색 기능을 분리하여
             정보 접근성과 활용성을 높이는 데 초점을 두었습니다.
         </div>
@@ -339,11 +375,13 @@ def page_intro():
             <div class="page-section-body">
                 • 대시보드 기반 전체 현황 확인<br>
                 • 연료, 차종, 용도, 지역별 시각화 제공<br>
+                • 유가 변동 추이 및 등록 대수 변화 비교<br>   
                 • 조건 선택을 통한 조회 및 분석 기능<br>
-                • FAQ 및 서비스 안내 제공
+                • FAQ 및 데이터 설명 페이지 제공
             </div>
         </div>
         """, unsafe_allow_html=True)
+
     with col4:
         st.markdown("""
         <div class="page-section">
@@ -352,16 +390,136 @@ def page_intro():
                 • 자동차 등록 현황 데이터의 이해도 향상<br>
                 • 다양한 기준의 빠른 비교 및 탐색 가능<br>
                 • 복잡한 공공데이터의 접근성과 활용성 향상<br>
-                • 사용자 중심의 탐색형 정보 서비스 구현
+                • 사용자 중심의 탐색형 정보 서비스 구현<br><br>
             </div>
         </div>
         """, unsafe_allow_html=True)
+
+
+# -----------------------
+# 페이지: 데이터 설명
+# -----------------------
+
+def page_data_guide():
+    col1, _ = st.columns([1, 9])
+    with col1:
+        if st.button("🏠 시작화면", use_container_width=True, key="go_start",type="tertiary"):
+                go_to("start")
+
+    st.markdown("""
+    <div class="page-hero">
+        <div class="page-hero-title">🗂️ 데이터 설명</div>
+        <div class="page-hero-desc">
+            본 페이지는 서비스에서 활용하는 자동차 등록 현황 데이터와<br>유가 변동 데이터의
+            구성 항목 및 분류 기준을 안내하기 위한 페이지입니다.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    render_top_nav()
+
+    st.divider()
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.markdown("""
+        <div class="page-card">
+            <div class="page-card-title">⛽ 연료 기준</div>
+            <div class="page-card-body">
+                본 서비스에서는 차량을 연료 유형에 따라 분류하여 현황을 제공합니다.<br><br>
+                주요 분류 항목은 다음과 같습니다.<br>
+                • 휘발유<br>
+                • 경유<br>
+                • 전기<br>
+                • 하이브리드(휘발유+전기)<br>
+                • 하이브리드(경유+전기)<br><br>
+                이를 통해 친환경차와 내연기관차의 구성 차이를 비교할 수 있습니다.
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with col2:
+        st.markdown("""
+        <div class="page-card">
+            <div class="page-card-title">🚘 차종 기준</div>
+            <div class="page-card-body">
+                차량은 용도와 형태에 따라 차종별로 분류됩니다.<br><br>
+                본 서비스에서 사용하는 차종 분류는 다음과 같습니다.<br>
+                • 승용<br>
+                • 승합<br>
+                • 화물<br>
+                • 특수<br><br>
+                이를 통해 차량 유형별 등록 현황과 분포를 확인할 수 있습니다.
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    col3, col4 = st.columns(2)
+
+    with col3:
+        st.markdown("""
+        <div class="page-card">
+            <div class="page-card-title">🏷️ 용도 기준</div>
+            <div class="page-card-body">
+                차량은 사용 목적에 따라 용도로도 구분됩니다.<br><br>
+                본 서비스에서는 다음 두 가지 기준을 사용합니다.<br>
+                • 비사업용<br>
+                • 사업용<br><br>
+                이를 통해 일반 개인 및 기업·운송 목적 차량의 구성을 비교할 수 있습니다.
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with col4:
+        st.markdown("""
+        <div class="page-card">
+            <div class="page-card-title">🗺️ 지역 기준</div>
+            <div class="page-card-body">
+                지역 기준은 전국 17개 시도를 중심으로 구성됩니다.<br><br>
+                지역은 다음과 같습니다.<br>
+                • 시 : 서울, 부산, 인천, 대구, 대전, 광주, 울산, 세종<br>
+                • 도 : 경기, 충북, 충남, 전남, 경북, 경남, 강원, 전북, 제주<br>
+                <br>
+                이를 통해 지역별 자동차 등록 규모와 분포를 비교할 수 있습니다.
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("###")
+
+    st.markdown("""
+    <div class="page-section">
+        <div class="page-section-title">📌 데이터 활용 방식</div>
+        <div class="page-section-body">
+            본 서비스는 위와 같은 연료, 차종, 용도, 지역 기준을 기반으로
+            자동차 등록 현황을 시각화하고 비교할 수 있도록 구성되어 있습니다.<br><br>
+            대시보드 페이지에서는 각 기준별 전체 흐름을 확인할 수 있으며,
+            분석 페이지에서는 여러 조건을 조합하여 보다 구체적인 현황을 탐색할 수 있습니다.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("""
+    <div class="page-section">
+        <div class="page-section-title">🔎 해석 시 참고사항</div>
+        <div class="page-section-body">
+            본 페이지의 설명은 서비스 내 데이터 탐색을 돕기 위한 기준 안내입니다.<br><br>
+            실제 데이터 연동 단계에서는 데이터 원본의 구성 방식과 기준에 따라
+            일부 분류 항목명 또는 해석 방식이 달라질 수 있습니다.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
 
 # -----------------------
 # 페이지: 팀 소개
 # -----------------------
 def page_team():
-    render_page_top()
+    col1, _ = st.columns([1, 9])
+    with col1:
+        if st.button("🏠 시작화면", use_container_width=True, key="go_start",type="tertiary"):
+                go_to("start")
 
     st.markdown("""
     <div class="page-hero">
@@ -372,6 +530,8 @@ def page_team():
         </div>
     </div>
     """, unsafe_allow_html=True)
+
+    render_top_nav()
 
     st.markdown("""
     <div class="page-section">
@@ -389,7 +549,7 @@ def page_team():
     for col, name, chip, body in zip(
         [col1, col2, col3],
         ["팀원 1", "팀원 2", "팀원 3"],
-        ["기획 · 서비스 설계", "데이터 구성 · 분석 지원", "UI 구현 · 페이지 개발"],
+        ["기획 · DB설계", "페이지 개발· 분석 지원", "UI 구현 · 디자인 구성"],
         [
             "프로젝트의 전체 방향성을 설정하고, 서비스 목적과 페이지 구조를 설계하였습니다.<br><br>"
             "사용자가 데이터를 직관적으로 탐색할 수 있도록 서비스 흐름과 주요 기능 구성을 담당하였습니다.",
@@ -416,7 +576,7 @@ def page_team():
                 팀원들은 기획, 데이터, 구현 역할을 분담하되,
                 전체 서비스 흐름과 핵심 기능은 함께 논의하며 결정하였습니다.<br><br>
                 이를 통해 기능 구현과 페이지 구성이 단절되지 않고,
-                하나의 일관된 서비스 경험으로 이어질 수 있도록 하였습니다.
+                하나의 일관된 서비스 경험으로 이어질 수 있도록 구성했습니다.
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -425,9 +585,10 @@ def page_team():
         <div class="page-section">
             <div class="page-section-title">✨ 팀의 강점</div>
             <div class="page-section-body">
-                우리 팀은 데이터 이해와 서비스 구현을 분리하지 않고,
-                사용자가 실제로 활용하기 쉬운 구조를 만드는 데 중점을 두었습니다.<br><br>
-                단순한 결과 제시를 넘어, 데이터를 탐색 가능한 형태로 제공하는 점이
+                우리 팀은 사용자가 실제로 활용하기 쉬운 구조를 만드는 데 중점을 두었습니다.<br><br>
+                <br>
+                유가와 자동차 등록 현황 데이터를 탐색하고,
+                대시보드 시각화를 통해 이들의 관계성을 파악할 수 있다는 점이
                 팀 프로젝트의 핵심 강점입니다.
             </div>
         </div>
@@ -445,36 +606,70 @@ REGION_OPTIONS  = ["서울", "부산", "대구", "인천", "광주", "대전", "
                    "경기", "강원", "충북", "충남", "전북", "전남", "경북", "경남", "제주"]
 
 def page_dashboard():
-    render_page_top()
+    col1, _ = st.columns([1, 9])
+    with col1:
+        if st.button("🏠 시작화면", use_container_width=True, key="go_start",type="tertiary"):
+                go_to("start")
+
+    st.markdown("""
+    <div class="page-hero">
+        <div class="page-hero-title">📊 대시보드</div>
+        <div class="page-hero-desc">
+            전국 시도별 자동차 등록 현황과 유가 변동 흐름을 다양한 관점에서 확인하고,
+            주요 분포와 변화 추이를 직관적으로 볼 수 있는 대시보드 페이지입니다.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    render_top_nav()
+
+    st.divider()
 
     selected_tab = st.segmented_control(None, DASHBOARD_TABS, default="개요")
 
-    st.markdown(
-        f"<div style='background:#f4f6f8;padding:12px 16px;border-radius:12px;"
-        f"margin:8px 0 18px;font-weight:600;color:#1f3b5b;'>"
-        f"현재 대시보드: {selected_tab}</div>",
-        unsafe_allow_html=True,
-    )
+    # st.markdown(
+    #     f"<div style='background:#f4f6f8;padding:12px 16px;border-radius:12px;"
+    #     f"margin:8px 0 18px;font-weight:600;color:#1f3b5b;'>"
+    #     f"현재 대시보드: {selected_tab}</div>",
+    #     unsafe_allow_html=True,
+    # )
 
     # 사이드바 필터
     selected_fuels = selected_types = selected_usages = selected_regions = []
     with st.sidebar:
+        
+        st.markdown("""
+        <div style="
+            color: #4b5563;
+            font-size: 15px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            margin-bottom: 14px;
+        ">
+            Team<br>Project_1
+        </div>
+        """, unsafe_allow_html=True)  
+        
+        st.divider()
+
+        st.markdown("##")
+        st.markdown("##")
+
         st.header("📌 대시보드 필터")
         if selected_tab == "연료별 현황":
             selected_fuels = st.multiselect("연료 선택", FUEL_OPTIONS, placeholder="연료를 선택하세요")
-        elif selected_tab == "차종·용도 현황":          # ← 버그 수정: 점(·) 통일
+        elif selected_tab == "차종·용도 현황":         
             selected_types  = st.multiselect("차종 선택", TYPE_OPTIONS,  placeholder="차종을 선택하세요")
             selected_usages = st.multiselect("용도 선택", USAGE_OPTIONS, placeholder="용도를 선택하세요")
         elif selected_tab == "지역별 현황":
             selected_regions = st.multiselect("지역 선택", REGION_OPTIONS, placeholder="지역을 선택하세요")
         else:
+            st.markdown("###")
             st.caption("개요 탭은 별도 필터 없이 전체 현황을 보여줍니다.")
-
-    # 본문
-    st.title("📈 대시보드")
-    st.write("자동차 등록 현황을 다양한 관점에서 시각적으로 확인할 수 있습니다.")
+        
 
     if selected_tab == "개요":
+        st.markdown("###")
         st.subheader("⭐ 전체 현황 개요")
         col1, col2, col3, col4 = st.columns(4)
         col1.metric("전체 등록 대수", "예시값")
@@ -549,8 +744,25 @@ def page_dashboard():
 # -----------------------
 # 페이지: 분석
 # -----------------------
+
+
+
 def page_analysis():
-    render_page_top()
+    col1, _ = st.columns([1, 9])
+    with col1:
+        if st.button("🏠 시작화면", use_container_width=True, key="go_start",type="tertiary"):
+                go_to("start")
+
+    st.markdown("""
+    <div class="page-hero">
+        <div class="page-hero-title">📈 분석</div>
+        <div class="page-hero-desc">
+            유가 변동과 자동차 등록현황을 선택한 조건에 따라 간단한 분석을 할 수 있습니다.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    render_top_nav()
 
     with st.sidebar:
         st.header("🔎 분석 조건")
@@ -559,8 +771,6 @@ def page_analysis():
         selected_usage  = st.multiselect("용도 선택", USAGE_OPTIONS)
         selected_region = st.multiselect("지역 선택", REGION_OPTIONS)
 
-    st.title("📊 분석 페이지")
-    st.write("선택한 조건에 따라 자동차 등록 현황을 확인할 수 있습니다.")
 
     if not any([selected_fuel, selected_type, selected_usage, selected_region]):
         st.info("왼쪽 사이드바에서 조건을 선택하면 관련 데이터가 표시됩니다.")
@@ -596,6 +806,184 @@ def page_analysis():
         st.write("필터링된 데이터 테이블이 들어갑니다.")
 
 # -----------------------
+# 페이지: FAQ
+# -----------------------
+def page_faq():
+
+    # st.markdown("""
+    # <div>
+    #     <span class="version-badge">v1.0.0<br>Prototype<br>Updated 03.28</span>
+        
+    # </div>
+    # """, unsafe_allow_html=True)
+
+    render_page_top()
+
+    st.markdown("""
+    <div class="page-hero">
+        <div class="page-hero-title">❓ FAQ</div>
+        <div class="page-hero-desc">
+            기업 FAQ 정보를 주제별로 탐색하고 확인할 수 있는 페이지입니다.
+            추후 실제 기업 웹페이지 FAQ 데이터를 크롤링하여 연동할 예정입니다.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # -----------------------
+    # 예시 FAQ 데이터
+    # -----------------------
+    faq_data = [
+        {
+            "company": "현대자동차",
+            "category": "구매",
+            "question": "전기차 보조금은 어떻게 확인하나요?",
+            "answer": "전기차 보조금은 지역별 공고와 구매 절차에 따라 확인할 수 있습니다."
+        },
+        {
+            "company": "현대자동차",
+            "category": "서비스",
+            "question": "정기 점검 예약은 어디서 하나요?",
+            "answer": "공식 서비스센터 또는 온라인 예약 시스템을 통해 가능합니다."
+        },
+        {
+            "company": "기아",
+            "category": "구매",
+            "question": "시승 신청은 어떻게 하나요?",
+            "answer": "공식 홈페이지의 시승 신청 메뉴에서 원하는 차종과 일정을 선택할 수 있습니다."
+        },
+        {
+            "company": "기아",
+            "category": "계정",
+            "question": "멤버십 가입은 어디서 하나요?",
+            "answer": "공식 홈페이지 또는 앱에서 회원가입 후 멤버십 서비스를 이용할 수 있습니다."
+        },
+        {
+            "company": "테슬라",
+            "category": "계정",
+            "question": "앱 계정 연결은 어떻게 하나요?",
+            "answer": "차량 인도 후 계정 등록 및 앱 연동 절차를 통해 사용할 수 있습니다."
+        },
+        {
+            "company": "테슬라",
+            "category": "서비스",
+            "question": "서비스 예약은 어디서 진행하나요?",
+            "answer": "Tesla 앱에서 서비스 항목을 선택하고 예약을 진행할 수 있습니다."
+        }
+    ]
+
+    # -----------------------
+    # 검색 / 필터 영역
+    # -----------------------
+    st.markdown("""
+    <div class="page-section">
+        <div class="page-section-title">🔎 FAQ 검색 및 필터</div>
+        <div class="page-section-body">
+            기업, 카테고리, 키워드를 선택하여 원하는 FAQ를 빠르게 확인할 수 있습니다.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    f1, f2, f3 = st.columns([1, 1, 1.2])
+
+    with f1:
+        selected_company = st.selectbox(
+            "기업 선택",
+            ["전체", "현대자동차", "기아", "테슬라"],
+            key="faq_company"
+        )
+
+    with f2:
+        selected_category = st.selectbox(
+            "카테고리 선택",
+            ["전체", "구매", "서비스", "계정", "결제", "환불"],
+            key="faq_category"
+        )
+
+    with f3:
+        keyword = st.text_input(
+            "키워드 검색",
+            placeholder="질문 또는 답변 키워드를 입력하세요",
+            key="faq_keyword"
+        )
+
+    # -----------------------
+    # 필터링
+    # -----------------------
+    filtered_faq = faq_data.copy()
+
+    if selected_company != "전체":
+        filtered_faq = [faq for faq in filtered_faq if faq["company"] == selected_company]
+
+    if selected_category != "전체":
+        filtered_faq = [faq for faq in filtered_faq if faq["category"] == selected_category]
+
+    if keyword:
+        keyword_lower = keyword.lower()
+        filtered_faq = [
+            faq for faq in filtered_faq
+            if keyword_lower in faq["question"].lower()
+            or keyword_lower in faq["answer"].lower()
+        ]
+
+    # -----------------------
+    # 결과 요약
+    # -----------------------
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.metric("선택 기업", selected_company)
+
+    with col2:
+        st.metric("선택 카테고리", selected_category)
+
+    with col3:
+        st.metric("검색 결과 수", len(filtered_faq))
+
+    st.markdown("###")
+
+    # -----------------------
+    # FAQ 목록
+    # -----------------------
+    st.markdown("""
+    <div class="page-section">
+        <div class="page-section-title">📋 FAQ 목록</div>
+        <div class="page-section-body">
+            질문을 클릭하면 답변을 확인할 수 있습니다.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    if not filtered_faq:
+        st.info("조건에 맞는 FAQ가 없습니다.")
+    else:
+        for i, faq in enumerate(filtered_faq):
+            with st.expander(f"[{faq['company']}] {faq['question']}", expanded=False):
+                st.markdown(f"**카테고리:** {faq['category']}")
+                st.write(faq["answer"])
+
+    st.markdown("###")
+
+    # -----------------------
+    # 안내 영역
+    # -----------------------
+    st.markdown("""
+    <div class="page-section">
+        <div class="page-section-title">📌 안내</div>
+        <div class="page-section-body">
+            현재는 FAQ 페이지 구조를 구성하기 위한 예시 데이터가 표시되고 있습니다.<br><br>
+            실제 기업 FAQ 데이터는 추후 웹 크롤링을 통해 연동할 예정입니다.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.divider()
+    
+
+
+
+
+
+# -----------------------
 # 라우터
 # -----------------------
 PAGE_MAP = {
@@ -605,6 +993,8 @@ PAGE_MAP = {
     "team":      page_team,
     "dashboard": page_dashboard,
     "analysis":  page_analysis,
+    "faq" : page_faq,
+    "data_guide": page_data_guide
 }
 
 render_fn = PAGE_MAP.get(st.session_state.page)
