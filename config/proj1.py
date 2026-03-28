@@ -13,7 +13,6 @@ load_dotenv()
 
 
 
-import streamlit as st
 
 st.set_page_config(page_title="앱 예제", layout="wide")
 
@@ -90,56 +89,114 @@ def page_start():
         if st.button("세부 화면으로 들어가기", use_container_width=True):
             go_to("main")
 
-
 def page_main():
-    render_top_nav()  # ← 수정: render_home_button() + render_top_menu() → 통합
+    render_top_nav()
 
-    st.title("🏠 세부 화면 메인")
-    st.write("카드를 클릭해서 세부 내용을 확인하세요.")
+    st.title("🏠 메인페이지")
+    st.write("전국 자동차 등록 현황 대시보드의 메인 페이지입니다.")
 
-    col1, col2, col3 = st.columns(3)
-    if col1.button("세부 화면 A", use_container_width=True): go_to("detail", "A")
-    if col2.button("세부 화면 B", use_container_width=True): go_to("detail", "B")
-    if col3.button("세부 화면 C", use_container_width=True): go_to("detail", "C")
+    col1, col2 = st.columns(2)
 
+    with col1:
+        st.info("데이터 개요 및 프로젝트 소개 영역")
+        if st.button("📊 분석페이지로 이동", use_container_width=True):
+            go_to("analysis")
 
-def page_detail():
-    render_top_nav()  # ← 수정: 동일하게 통합
+    with col2:
+        st.info("자주 묻는 질문 및 사용 안내 영역")
+        if st.button("❓ FAQ로 이동", use_container_width=True):
+            go_to("faq")
 
-    detail_key = st.session_state.detail_page
-    data = example_data.get(
-        detail_key,
-        {"title": "세부 화면", "description": "데이터 없음", "items": []},
-    )
+# def page_main():
+#     render_top_nav()  # ← 수정: render_home_button() + render_top_menu() → 통합
+
+#     st.title("🏠 세부 화면 메인")
+#     st.write("카드를 클릭해서 세부 내용을 확인하세요.")
+
+#     col1, col2, col3 = st.columns(3)
+#     if col1.button("세부 화면 A", use_container_width=True): go_to("detail", "A")
+#     if col2.button("세부 화면 B", use_container_width=True): go_to("detail", "B")
+#     if col3.button("세부 화면 C", use_container_width=True): go_to("detail", "C")
+
+# ===== 분석 =====
+def page_analysis():
+    render_top_nav()
 
     with st.sidebar:
-        st.header(f"{data['title']} 메뉴")
-        menus = {
-            "A": ["A 메뉴 1", "A 메뉴 2"],
-            "B": ["B 메뉴 1", "B 메뉴 2"],
-            "C": ["C 메뉴 1", "C 메뉴 2", "C 메뉴 3"],
-        }
-        for i, label in enumerate(menus.get(detail_key, [])):
-            st.button(label, key=f"sidebar_{detail_key}_{i}")
+        st.header("분석 필터")
 
-    st.title(f"📄 {data['title']}")
-    st.write(data["description"])
+        selected_fuel = st.multiselect(
+            "연료 선택",
+            ["휘발유", "경유", "전기", "하이브리드(휘발유+전기)", "하이브리드(경유+전기)"]
+        )
 
-    st.subheader("상품 목록")
-    for item in data["items"]:
-        st.write(f"- {item}")
+        selected_type = st.multiselect(
+            "차종 선택",
+            ["승용", "승합", "화물", "특수"]
+        )
 
-    if st.button("⬅️ 세부 화면 메인으로 돌아가기"):
-        go_to("main")
+        selected_usage = st.multiselect(
+            "용도 선택",
+            ["비사업용", "사업용"]
+        )
+
+        selected_region = st.multiselect(
+            "지역 선택",
+            ["서울", "부산", "대구", "인천", "광주", "대전", "울산", "세종",
+             "경기", "강원", "충북", "충남", "전북", "전남", "경북", "경남", "제주"]
+        )
+
+    st.title("📊 분석페이지")
+    st.write("선택한 조건에 따라 대시보드가 변경됩니다.")
+
+    st.subheader("현재 선택 조건")
+    st.write("연료:", selected_fuel if selected_fuel else "전체")
+    st.write("차종:", selected_type if selected_type else "전체")
+    st.write("용도:", selected_usage if selected_usage else "전체")
+    st.write("지역:", selected_region if selected_region else "전체")
+
+    st.container(border=True).write("KPI 카드 영역")
+    st.container(border=True).write("차트 영역")
+    st.container(border=True).write("상세 테이블 영역")
+
+# def page_detail():
+#     render_top_nav()  # ← 수정: 동일하게 통합
+
+#     detail_key = st.session_state.detail_page
+#     data = example_data.get(
+#         detail_key,
+#         {"title": "세부 화면", "description": "데이터 없음", "items": []},
+#     )
+
+#     with st.sidebar:
+#         st.header(f"{data['title']} 메뉴")
+#         menus = {
+#             "A": ["A 메뉴 1", "A 메뉴 2"],
+#             "B": ["B 메뉴 1", "B 메뉴 2"],
+#             "C": ["C 메뉴 1", "C 메뉴 2", "C 메뉴 3"],
+#         }
+#         for i, label in enumerate(menus.get(detail_key, [])):
+#             st.button(label, key=f"sidebar_{detail_key}_{i}")
+
+#     st.title(f"📄 {data['title']}")
+#     st.write(data["description"])
+
+#     st.subheader("상품 목록")
+#     for item in data["items"]:
+#         st.write(f"- {item}")
+
+#     if st.button("⬅️ 세부 화면 메인으로 돌아가기"):
+#         go_to("main")
 
 
 # -----------------------
 # 라우터
 # -----------------------
 PAGE_MAP = {
-    "start":  page_start,
-    "main":   page_main,
-    "detail": page_detail,
+    "start": page_start,
+    "main": page_main,
+    "analysis": page_analysis,
+    #"faq": page_faq,
 }
 
 render_fn = PAGE_MAP.get(st.session_state.page)
