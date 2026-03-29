@@ -12,7 +12,7 @@ CREATE DATABASE IF NOT EXISTS vehicle_stats
 USE vehicle_stats;
 
 -- ============================================================
--- 공통코드 테이블 (TB_COMMON_CODE)
+-- 공통코드 테이블 (TBL_COMMON_CODE)
 -- 대상: 연료(FUEL) / 차종(TYPE) / 용도(USAGE) / 지역(REGION)
 -- 기준: 소계·집계·계 항목 제외 / 코드 약어 제외
 -- ============================================================
@@ -20,7 +20,7 @@ USE vehicle_stats;
 -- ------------------------------------------------------------
 -- 1. CREATE TABLE
 -- ------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS TB_COMMON_CODE (
+CREATE TABLE IF NOT EXISTS TBL_COMMON_CODE (
     CODE_GROUP  VARCHAR(10)  NOT NULL COMMENT '대분류 그룹 (FUEL / TYPE / USAGE / REGION)',
     CODE        VARCHAR(10)  NOT NULL COMMENT '중분류 코드',
     PARENT_CODE VARCHAR(10)      NULL COMMENT '상위 코드 (대분류 그룹 코드)',
@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS TB_COMMON_CODE (
 --    F01 휘발유 / F02 경유 / F03 전기
 --    F04 하이브리드(휘발유+전기) / F05 하이브리드(경유+전기)
 -- ------------------------------------------------------------
-INSERT INTO TB_COMMON_CODE
+INSERT INTO TBL_COMMON_CODE
     (CODE_GROUP, CODE, PARENT_CODE, CODE_NM, SORT_ORDER, USE_YN, REMARK)
 VALUES
     ('FUEL', 'G_FUEL', NULL,     '연료',                   0, 'Y', '연료 대분류'),
@@ -57,7 +57,7 @@ VALUES
 -- 3. INSERT — 차종 (TYPE)
 --    T01 승용 / T02 승합 / T03 화물 / T04 특수
 -- ------------------------------------------------------------
-INSERT INTO TB_COMMON_CODE
+INSERT INTO TBL_COMMON_CODE
     (CODE_GROUP, CODE, PARENT_CODE, CODE_NM, SORT_ORDER, USE_YN, REMARK)
 VALUES
     ('TYPE', 'G_TYPE', NULL,     '차종', 0, 'Y', '차종 대분류'),
@@ -71,7 +71,7 @@ VALUES
 -- 4. INSERT — 용도 (USAGE)
 --    U01 비사업용 / U02 사업용
 -- ------------------------------------------------------------
-INSERT INTO TB_COMMON_CODE
+INSERT INTO TBL_COMMON_CODE
     (CODE_GROUP, CODE, PARENT_CODE, CODE_NM, SORT_ORDER, USE_YN, REMARK)
 VALUES
     ('USAGE', 'G_USAGE', NULL,      '용도',    0, 'Y', '용도 대분류'),
@@ -83,7 +83,7 @@ VALUES
 -- 5. INSERT — 지역 (REGION)
 --    R01 서울 ~ R17 제주 (17개 시도, 합계 제외)
 -- ------------------------------------------------------------
-INSERT INTO TB_COMMON_CODE
+INSERT INTO TBL_COMMON_CODE
     (CODE_GROUP, CODE, PARENT_CODE, CODE_NM, SORT_ORDER, USE_YN, REMARK)
 VALUES
     ('REGION', 'G_REGION', NULL,       '전국', 0,  'Y', '지역 대분류'),
@@ -110,23 +110,23 @@ VALUES
 -- 확인용 조회
 -- ------------------------------------------------------------
 -- SELECT CODE_GROUP, CODE, PARENT_CODE, CODE_NM, SORT_ORDER
--- FROM   TB_COMMON_CODE
+-- FROM   TBL_COMMON_CODE
 -- ORDER  BY CODE_GROUP, SORT_ORDER;
 
 
 -- ============================================================
--- 연료별 차종별 용도별 지역별 등록현황 테이블 (TB_FUEL_REG_STAT)
+-- 연료별 차종별 용도별 지역별 등록현황 테이블 (TBL_FUEL_REG_STAT)
 -- 원천: 자동차 등록자료 통계 > 10.연료별_등록현황 시트
 -- 대상 연료: 휘발유(F01) / 경유(F02) / 전기(F03)
 --            하이브리드(휘발유+전기)(F04) / 하이브리드(경유+전기)(F05)
 -- ============================================================
 
-CREATE TABLE IF NOT EXISTS TB_FUEL_REG_STAT (
+CREATE TABLE IF NOT EXISTS TBL_FUEL_REG_STAT (
     STAT_YM    CHAR(6)     NOT NULL COMMENT '통계년월 (YYYYMM)',
-    FUEL_CD    VARCHAR(10) NOT NULL COMMENT '연료코드 (TB_COMMON_CODE FUEL 그룹)',
-    TYPE_CD    VARCHAR(10) NOT NULL COMMENT '차종코드 (TB_COMMON_CODE TYPE 그룹)',
-    USAGE_CD   VARCHAR(10) NOT NULL COMMENT '용도코드 (TB_COMMON_CODE USAGE 그룹)',
-    REGION_CD  VARCHAR(10) NOT NULL COMMENT '지역코드 (TB_COMMON_CODE REGION 그룹)',
+    FUEL_CD    VARCHAR(10) NOT NULL COMMENT '연료코드 (TBL_COMMON_CODE FUEL 그룹)',
+    TYPE_CD    VARCHAR(10) NOT NULL COMMENT '차종코드 (TBL_COMMON_CODE TYPE 그룹)',
+    USAGE_CD   VARCHAR(10) NOT NULL COMMENT '용도코드 (TBL_COMMON_CODE USAGE 그룹)',
+    REGION_CD  VARCHAR(10) NOT NULL COMMENT '지역코드 (TBL_COMMON_CODE REGION 그룹)',
     REG_CNT    INT         NOT NULL DEFAULT 0 COMMENT '등록 대수 (하이픈은 0으로 처리)',
     CREATED_AT DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성일시',
     UPDATED_AT DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '수정일시',
@@ -138,4 +138,28 @@ CREATE TABLE IF NOT EXISTS TB_FUEL_REG_STAT (
   DEFAULT CHARSET=utf8mb4
   COLLATE=utf8mb4_unicode_ci
   COMMENT='연료별 차종별 용도별 지역별 등록현황';
+
+
+-- ============================================================
+-- 주유소 지역별 평균 판매가격 테이블 (TBL_FUEL_PRICE)
+-- 원천: 오피넷 지역별 평균 판매가격 (월간)
+-- 대상 연료: 휘발유(F01) / 경유(F02)
+-- 단위: 원/리터
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS TBL_FUEL_PRICE (
+    STAT_YM    CHAR(6)        NOT NULL COMMENT '통계년월 (YYYYMM)',
+    FUEL_CD    VARCHAR(10)    NOT NULL COMMENT '연료코드 (F01:휘발유 / F02:경유)',
+    REGION_CD  VARCHAR(10)    NOT NULL COMMENT '지역코드 (TBL_COMMON_CODE REGION 그룹)',
+    AVG_PRICE  DECIMAL(8, 2)  NOT NULL COMMENT '평균 판매가격 (원/리터)',
+    CREATED_AT DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성일시',
+    UPDATED_AT DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '수정일시',
+    PRIMARY KEY (STAT_YM, FUEL_CD, REGION_CD),
+    INDEX IDX_FUELPRICE_YM     (STAT_YM),
+    INDEX IDX_FUELPRICE_FUEL   (FUEL_CD),
+    INDEX IDX_FUELPRICE_REGION (REGION_CD)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci
+  COMMENT='주유소 지역별 월간 평균 판매가격 (원/리터)';
 

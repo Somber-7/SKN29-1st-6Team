@@ -1,5 +1,5 @@
 """
-10.연료별_등록현황 시트 데이터를 TB_FUEL_REG_STAT 테이블에 적재
+10.연료별_등록현황 시트 데이터를 TBL_FUEL_REG_STAT 테이블에 적재
 - 대상 연료: 휘발유(F01), 경유(F02), 전기(F03),
              하이브리드(휘발유+전기)(F04), 하이브리드(경유+전기)(F05)
 - 집계 행 (소계/계) 제외
@@ -139,7 +139,7 @@ def parse_sheet(ws, stat_ym: str) -> list[tuple]:
 def batch_upsert(cursor, records: list[tuple]) -> int:
     """1000건 단위 배치 INSERT ... ON DUPLICATE KEY UPDATE"""
     sql = """
-        INSERT INTO TB_FUEL_REG_STAT
+        INSERT INTO TBL_FUEL_REG_STAT
             (STAT_YM, FUEL_CD, TYPE_CD, USAGE_CD, REGION_CD, REG_CNT)
         VALUES (%s, %s, %s, %s, %s, %s)
         ON DUPLICATE KEY UPDATE
@@ -155,9 +155,9 @@ def batch_upsert(cursor, records: list[tuple]) -> int:
 
 
 def ensure_table(cursor):
-    """TB_FUEL_REG_STAT 테이블이 없으면 생성"""
+    """TBL_FUEL_REG_STAT 테이블이 없으면 생성"""
     cursor.execute("""
-        CREATE TABLE IF NOT EXISTS TB_FUEL_REG_STAT (
+        CREATE TABLE IF NOT EXISTS TBL_FUEL_REG_STAT (
             STAT_YM    CHAR(6)     NOT NULL COMMENT '통계년월 (YYYYMM)',
             FUEL_CD    VARCHAR(10) NOT NULL COMMENT '연료코드',
             TYPE_CD    VARCHAR(10) NOT NULL COMMENT '차종코드',
