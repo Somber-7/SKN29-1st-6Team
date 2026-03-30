@@ -14,7 +14,7 @@ from app.db_connect import (
     get_national_average_fuel_price_trend
 )
 
-DASHBOARD_TABS = ["개요", "유가 추이", "연료별 현황", "차종·용도 현황", "지역별 현황"]
+DASHBOARD_TABS = ["유가 추이", "연료별 현황", "차종·용도 현황", "지역별 현황"]
 
 def load_dynamic_options():
     """
@@ -155,7 +155,7 @@ def page_analysis():
     </div>
     """)
 
-    selected_tab = st.segmented_control(None, DASHBOARD_TABS, default="개요")
+    selected_tab = st.segmented_control(None, DASHBOARD_TABS, default="유가 추이")
 
     # 탭 전환 시 초기값 보장
     selected_fuels = selected_types = selected_usages = selected_regions = []
@@ -184,35 +184,35 @@ def page_analysis():
             selected_usages = st.multiselect("용도 선택", USAGE_OPTIONS, placeholder="용도를 선택하세요")
         elif selected_tab == "지역별 현황":
             selected_regions = st.multiselect("지역 선택", REGION_OPTIONS, placeholder="지역을 선택하세요")
-        else:
-            st.caption("개요 탭은 별도 필터 없이 전체 현황을 보여줍니다.")
+        # else:
+        #     st.caption("개요 탭은 별도 필터 없이 전체 현황을 보여줍니다.")
 
     # ── 개요 ──
-    if selected_tab == "개요":
-        st.write("")
-        st.subheader("⭐ 전체 현황 개요")
-        cols = st.columns(6)
-        for col, label, val in zip(
-            cols,
-            ["전체 등록 대수", "연료", "차종", "유가", "지역", "OO"],
-            ["예시값", "5", "3", "1", "17", "13"],
-        ):
-            with col:
-                with st.container(border=True):
-                    st.markdown(label)
-                    st.write(val)
-        c1, c2 = st.columns(2)
-        with c1:
-            with st.container(border=True):
-                st.markdown("**전체 등록 현황 요약 차트 영역**")
-                st.write("예: 도넛차트 / 전체 분포 차트")
-        with c2:
-            with st.container(border=True):
-                st.markdown("**주요 비중 비교 차트 영역**")
-                st.write("예: 연료별 비중 / 차종별 비중")
+    # if selected_tab == "개요":
+    #     st.write("")
+    #     st.subheader("⭐ 전체 현황 개요")
+    #     cols = st.columns(6)
+    #     for col, label, val in zip(
+    #         cols,
+    #         ["전체 등록 대수", "연료", "차종", "유가", "지역", "OO"],
+    #         ["예시값", "5", "3", "1", "17", "13"],
+    #     ):
+    #         with col:
+    #             with st.container(border=True):
+    #                 st.markdown(label)
+    #                 st.write(val)
+    #     c1, c2 = st.columns(2)
+    #     with c1:
+    #         with st.container(border=True):
+    #             st.markdown("**전체 등록 현황 요약 차트 영역**")
+    #             st.write("예: 도넛차트 / 전체 분포 차트")
+    #     with c2:
+    #         with st.container(border=True):
+    #             st.markdown("**주요 비중 비교 차트 영역**")
+    #             st.write("예: 연료별 비중 / 차종별 비중")
 
     # ── 유가 추이 ──
-    elif selected_tab == "유가 추이":
+    if selected_tab == "유가 추이":
         st.subheader("💰 유가 추이")
         if not selected_regions:
             st.info("왼쪽 사이드바에서 지역을 선택하면 유가 추이 차트가 표시됩니다.")

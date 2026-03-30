@@ -159,5 +159,28 @@ def inject_global_css():
         height: 4px;
         margin: 12px 0 18px 0;
     }
+    
+    / * -- 차트 영역 -- * /
+    .chart-card {
+        background: #ffffff;
+        border: 1px solid #E5E7EB;
+        border-radius: 22px;
+        padding: 18px 18px 10px 18px;
+        box-shadow: 0 6px 20px rgba(15, 23, 42, 0.06);
+        margin-bottom: 18px;
+        overflow: hidden;
+    }
+
+    .chart-card-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 10px;
+    }
+
+    .chart-card .stPlotlyChart {
+        border-radius: 16px;
+        overflow: hidden;
+    }                
     </style>
     """, unsafe_allow_html=True)
