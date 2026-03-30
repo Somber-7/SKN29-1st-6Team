@@ -128,7 +128,7 @@ def inject_global_css():
 # 상태 초기화
 # -----------------------
 if "page" not in st.session_state:
-    st.session_state.page = "start"
+    st.session_state.page = "main"
 if "detail_page" not in st.session_state:
     st.session_state.detail_page = None
 
@@ -165,7 +165,7 @@ def render_top_nav():
         col1, col2, col3, _,_,_,_,_, col4 = st.columns(9)
 
         with col1:
-            with st.popover("📌 홈", use_container_width=True):
+            with st.popover("📌 소개", use_container_width=True):
                 if st.button("📘 서비스 소개", key="nav_home_1", use_container_width=True): go_to("intro")
                 if st.button("🗂️ 데이터 설명", key="nav_home_2", use_container_width=True): go_to("data_guide")
                 if st.button("👥 팀 소개",     key="nav_home_3", use_container_width=True): go_to("team")
@@ -179,35 +179,35 @@ def render_top_nav():
             with st.popover("🔔 문의", use_container_width=True):
                 if st.button("❓ FAQ", key="nav_contact_1", use_container_width=True): go_to("faq")
 
-        with col4:
-            if st.button("🏠 Main", key="logo_to_main", use_container_width=True):
-                go_to("main")
+        # with col4:
+        #     if st.button("🏠 Main", key="logo_to_main2", use_container_width=True):
+        #         go_to("main")
 
 def render_top_btn():
     """🔚 버튼 — 각 페이지 상단에서 시작화면으로"""
-    col1, _ = st.columns([1, 9])
+    _, col1 = st.columns([9, 1])
     with col1:
-        if st.button("🔚", use_container_width=True, key="go_start", type="tertiary"):
-            go_to("start")
+        if st.button("🏠", use_container_width=True, key="logo_to_main_btn", type="tertiary"):
+            go_to("main")
 
 # -----------------------
 # 페이지: 시작화면
 # -----------------------
-def page_start():
-    st.markdown("<div style='height: 60px;'></div>", unsafe_allow_html=True)
+# def page_start():
+#     st.markdown("<div style='height: 60px;'></div>", unsafe_allow_html=True)
 
-    k1, _, k3 = st.columns([2, 0.5, 1.3], gap="xsmall")
-    with k1:
-        st.image("config/assets/image/img_ex2.png", width=700)
-    with k3:
-        st.markdown("""
-        <div class="page-hero">
-            <div class="page-hero-title">자동차 등록 현황<br>& 유가 변동</div>
-            <div class="page-hero-desc">메모</div>
-        </div>
-        """, unsafe_allow_html=True)
-        if st.button("🚀 서비스 시작하기", key="start_go_main", use_container_width=True):
-            go_to("main")
+#     k1, _, k3 = st.columns([2, 0.5, 1.3], gap="xsmall")
+#     with k1:
+#         st.image("config/assets/image/img_ex2.png", width=700)
+#     with k3:
+#         st.markdown("""
+#         <div class="page-hero">
+#             <div class="page-hero-title">자동차 등록 현황<br>& 유가 변동</div>
+#             <div class="page-hero-desc">메모</div>
+#         </div>
+#         """, unsafe_allow_html=True)
+#         if st.button("🚀 서비스 시작하기", key="start_go_main", use_container_width=True):
+#             go_to("main")
 
 # -----------------------
 # 페이지: 메인
@@ -217,22 +217,116 @@ def page_main():
     render_header()
     render_top_nav()
 
-    st.title("🚗 Main")
+    st.title("🚗 서비스 소개")
     st.write("상단 메뉴를 통해 원하는 기능으로 이동할 수 있습니다.")
 
-    col1, col2, col3 = st.columns(3)
+    render_page_header("""
+    <div class="page-hero">
+        <div class="page-hero-title">📘 서비스 소개</div>
+        <div class="page-hero-desc">
+            전국 자동차 등록 현황과 유가 변동 데이터를 현황을 파악하고,
+            탐색할 수 있도록 설계한 데이터 기반 서비스입니다.
+        </div>
+    </div>
+    """)
+
+    col1, col2 = st.columns(2)
     with col1:
-        with st.container(key="main_card_1"):
-            st.markdown('<div class="card-title">📌 홈</div>', unsafe_allow_html=True)
-            st.markdown('<div class="card-desc">전반적인 서비스 개요와<br>데이터 및 팀 구성을 소개합니다.</div>', unsafe_allow_html=True)
+        st.markdown("""
+        <div class="page-card">
+            <div class="page-card-title">🎯 프로젝트 목표</div>
+            <div class="page-card-body">
+                자동차 등록 데이터는 다양한 기준으로 구성되어 있어 단순한 표 형태만으로는
+                전체 구조를 파악하기 어렵습니다.<br><br>
+                본 프로젝트는 자동차 등록현황 데이터와 유가 변동 데이터를 함께 활용하여,
+                사용자가 전반적인 현황과 두 데이터 사이 관계를 보다 쉽게 이해할 수 있는 것을 목표로 합니다.
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
     with col2:
-        with st.container(key="main_card_2"):
-            st.markdown('<div class="card-title">ℹ️ 현황</div>', unsafe_allow_html=True)
-            st.markdown('<div class="card-desc">조건에 대한 데이터 현황과<br>간단한 분석을 할 수 있습니다.</div>', unsafe_allow_html=True)
+        st.markdown("""
+        <div class="page-card">
+            <div class="page-card-title">⚠️ 문제 정의</div>
+            <div class="page-card-body">
+                자동차 등록 현황 데이터는 항목 수가 많고 분류 기준이 다양해
+                원하는 정보를 직관적으로 찾기 어렵습니다.<br><br>
+                또한 유가 변동은 차량 선택과 등록 흐름에 영향을 줄 수 있는 요인이지만,
+                이를 함께 비교하고 해석할 수 있는 서비스는 제한적입니다.<br><br>
+                따라서 본 서비스는 자동차 등록현황과 유가 가격을 함께 탐색할 수 있도록
+                돕는 사용자 친화적 정보 구조 시스템을 채택하고 있습니다.
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("""
+    <div class="page-card">
+        <div class="page-card-title">🧭 서비스 방향성</div>
+        <div class="page-card-body">
+            본 서비스는 사용자가 원하는 조건을 선택하고, 그 결과를 직관적인 시각화와 함께 확인할 수 있도록 설계하였습니다.<br><br>
+            또한 전체 현황을 빠르게 이해할 수 있는 대시보드와 세부 조건별 탐색 기능을 분리하여
+            정보 접근성과 활용성을 높이는 데 초점을 두었습니다.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    c1, c2, c3, c4 = st.columns(4)
+    for col, title, body in zip(
+        [c1, c2, c3, c4],
+        ["직관성", "탐색성", "비교 가능성", "확장성"],
+        [
+            "복잡한 데이터를 한눈에 이해할 수 있도록 시각화 중심으로 구성",
+            "사용자가 원하는 기준을 선택해 필요한 정보를 직접 조회 가능",
+            "연료, 차종, 용도, 지역 기준으로 데이터를 비교하며 구조를 파악",
+            "향후 기능 추가와 세부 분석 확장을 고려한 페이지 구조 설계",
+        ],
+    ):
+        col.markdown(
+            f'<div class="page-card"><div class="page-card-title">{title}</div>'
+            f'<div class="page-card-body">{body}</div></div>',
+            unsafe_allow_html=True,
+        )
+
+    st.markdown("###")
+    col3, col4 = st.columns(2)
     with col3:
-        with st.container(key="main_card_3"):
-            st.markdown('<div class="card-title">🔔 문의</div>', unsafe_allow_html=True)
-            st.markdown('<div class="card-desc">자주 묻는 질문을<br>확인합니다.</div>', unsafe_allow_html=True)
+        st.markdown("""
+        <div class="page-section">
+            <div class="page-section-title">🛠️ 주요 기능</div>
+            <div class="page-section-body">
+                • 대시보드 기반 전체 현황 확인<br>
+                • 연료, 차종, 용도, 지역별 시각화 제공<br>
+                • 유가 변동 추이 및 등록 대수 변화 비교<br>
+                • 조건 선택을 통한 조회 및 분석 기능<br>
+                • FAQ 및 데이터 설명 페이지 제공
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    with col4:
+        st.markdown("""
+        <div class="page-section">
+            <div class="page-section-title">✨ 기대 효과</div>
+            <div class="page-section-body">
+                • 자동차 등록 현황 데이터의 이해도 향상<br>
+                • 다양한 기준의 빠른 비교 및 탐색 가능<br>
+                • 복잡한 공공데이터의 접근성과 활용성 향상<br>
+                • 사용자 중심의 탐색형 정보 서비스 구현
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    # col1, col2, col3 = st.columns(3)
+    # with col1:
+    #     with st.container(key="main_card_1"):
+    #         st.markdown('<div class="card-title">📌 홈</div>', unsafe_allow_html=True)
+    #         st.markdown('<div class="card-desc">전반적인 서비스 개요와<br>데이터 및 팀 구성을 소개합니다.</div>', unsafe_allow_html=True)
+    # with col2:
+    #     with st.container(key="main_card_2"):
+    #         st.markdown('<div class="card-title">ℹ️ 현황</div>', unsafe_allow_html=True)
+    #         st.markdown('<div class="card-desc">조건에 대한 데이터 현황과<br>간단한 분석을 할 수 있습니다.</div>', unsafe_allow_html=True)
+    # with col3:
+    #     with st.container(key="main_card_3"):
+    #         st.markdown('<div class="card-title">🔔 문의</div>', unsafe_allow_html=True)
+    #         st.markdown('<div class="card-desc">자주 묻는 질문을<br>확인합니다.</div>', unsafe_allow_html=True)
 
 # -----------------------
 # 공통 페이지 헤더 렌더러
@@ -798,7 +892,7 @@ def page_faq():
 # 라우터
 # -----------------------
 PAGE_MAP = {
-    "start":      page_start,
+    #"start":      page_start,
     "main":       page_main,
     "intro":      page_intro,
     "team":       page_team,
