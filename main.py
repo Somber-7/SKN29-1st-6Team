@@ -7,7 +7,6 @@ from datetime import datetime
 import os
 from dotenv import load_dotenv
 from app.db_connect import DB_connect, DB_CONFIG
-load_dotenv()
 
 st.set_page_config(page_title="Team 6", layout="wide")
 
@@ -19,8 +18,16 @@ DASHBOARD_TABS = ["개요", "유가 추이", "연료별 현황", "차종·용도
 @st.cache_data
 def load_dynamic_options():
     """
-    데이터베이스에서 동적 옵션(연료, 차종 등)을 로드합니다.
+    데이터베이스에서 동적 옵션(연료, 차종 등)을 로드하고, 실패 시 기본값을 사용합니다.
     """
+    default_options = {
+        "FUEL_OPTIONS": ["휘발유", "경유", "전기", "하이브리드(휘발유+전기)", "하이브리드(경유+전기)"],
+        "FUEL_PRICE_OPTIONS": ["휘발유", "경유"],
+        "TYPE_OPTIONS": ["승용", "승합", "화물", "특수"],
+        "USAGE_OPTIONS": ["비사업용", "사업용"],
+        "REGION_OPTIONS": ["서울", "부산", "대구", "인천", "광주", "대전", "울산", "세종", "경기", "강원", "충북", "충남", "전북", "전남", "경북", "경남", "제주"]
+    }
+
     option_methods = {
         "FUEL_OPTIONS": "get_fuel_options",
         "FUEL_PRICE_OPTIONS": "get_fuel_price_options",
@@ -29,28 +36,27 @@ def load_dynamic_options():
         "REGION_OPTIONS": "get_region_options"
     }
 
-    loaded_options = {
-        "FUEL_OPTIONS": [],
-        "FUEL_PRICE_OPTIONS": [],
-        "TYPE_OPTIONS": [],
-        "USAGE_OPTIONS": [],
-        "REGION_OPTIONS": []
-    }
-
-    try:
-        with DB_connect(DB_CONFIG) as db:
+    loaded_options = default_options.copy()
+    with DB_connect(DB_CONFIG) as db:
+        print(DB_CONFIG)
+        try:
             for key, method_name in option_methods.items():
-                df = getattr(db, method_name)()
-                if not df.empty and 'CODE_NAME' in df.columns:
-                    db_options = df['CODE_NAME'].tolist()
-                    if db_options:
-                        loaded_options[key] = db_options
-    except Exception as e:
-        print(f"Database error during option loading: {e}. Returning empty lists.")
-        # In case of any exception, return the dictionary with empty lists
-        return loaded_options
-
+                if hasattr(db, method_name):
+                    df = getattr(db, method_name)()
+                    if not df.empty and 'CODE_NAME' in df.columns:
+                        db_options = df['CODE_NAME'].tolist()
+                        if db_options:
+                            loaded_options[key] = db_options
+                else:
+                    print(f"Warning: Method {method_name} not found in DB_connect. Using default for {key}.")
+        except Exception as e:
+            print(f"Database error during option loading: {e}. Using default values.")
+            # In case of any exception, return the default dictionary
+            return default_options
+        finally:
+            db.close()
     return loaded_options
+
 
 # Load dynamic options once and use them throughout the app
 dynamic_options = load_dynamic_options()
@@ -490,52 +496,6 @@ def page_team():
 # -----------------------
 DASHBOARD_TABS = ["개요", "유가 추이", "연료별 현황", "차종·용도 현황", "지역별 현황"]
 
-@st.cache_data
-def load_dynamic_options():
-    """
-    데이터베이스에서 동적 옵션(연료, 차종 등)을 로드하고, 실패 시 기본값을 사용합니다.
-    """
-    default_options = {
-        "FUEL_OPTIONS": ["휘발유", "경유", "전기", "하이브리드(휘발유+전기)", "하이브리드(경유+전기)"],
-        "FUEL_PRICE_OPTIONS": ["휘발유", "경유", "LPG"],
-        "TYPE_OPTIONS": ["승용", "승합", "화물", "특수"],
-        "USAGE_OPTIONS": ["비사업용", "사업용"],
-        "REGION_OPTIONS": ["서울", "부산", "대구", "인천", "광주", "대전", "울산", "세종", "경기", "강원", "충북", "충남", "전북", "전남", "경북", "경남", "제주"]
-    }
-    
-    option_methods = {
-        "FUEL_OPTIONS": "get_fuel_options",
-        "FUEL_PRICE_OPTIONS": "get_fuel_price_options",
-        "TYPE_OPTIONS": "get_type_options",
-        "USAGE_OPTIONS": "get_usage_options",
-        "REGION_OPTIONS": "get_region_options"
-    }
-
-    loaded_options = default_options.copy()
-
-    try:
-        with DB_connect(DB_CONFIG) as db:
-            for key, method_name in option_methods.items():
-                df = getattr(db, method_name)()
-                if not df.empty and 'CODE_NAME' in df.columns:
-                    db_options = df['CODE_NAME'].tolist()
-                    if db_options:
-                        loaded_options[key] = db_options
-    except Exception as e:
-        print(f"Database error during option loading: {e}. Using default values.")
-        return default_options
-
-    return loaded_options
-
-# Load dynamic options once
-dynamic_options = load_dynamic_options()
-FUEL_OPTIONS = dynamic_options["FUEL_OPTIONS"]
-FUEL_PRICE_OPTIONS = dynamic_options["FUEL_PRICE_OPTIONS"]
-TYPE_OPTIONS = dynamic_options["TYPE_OPTIONS"]
-USAGE_OPTIONS = dynamic_options["USAGE_OPTIONS"]
-REGION_OPTIONS = dynamic_options["REGION_OPTIONS"]
-
-
 def page_dashboard():
     render_page_header("""
     <div class="page-section">
@@ -565,9 +525,9 @@ def page_dashboard():
         st.header("📌 대시보드 필터")
 
         if selected_tab == "유가 추이":
-            selected_fuel_prices = st.multiselect("연료 선택", FUEL_PRICE_OPTIONS, placeholder="연료를 선택하세요")
+            year_range = st.slider("기간 선택", min_value=2021, max_value=2026, value=(2021, 2026))
             st.divider()
-            year_range = st.slider("기간 선택", min_value=2015, max_value=2024, value=(2020, 2024))
+            selected_regions = st.multiselect("지역 선택", REGION_OPTIONS, placeholder="지역을 선택하세요")
         elif selected_tab == "연료별 현황":
             selected_fuels   = st.multiselect("연료 선택", FUEL_OPTIONS,  placeholder="연료를 선택하세요")
         elif selected_tab == "차종·용도 현황":
@@ -603,28 +563,50 @@ def page_dashboard():
 
     elif selected_tab == "유가 추이":
         st.subheader("💰 유가 추이")
-        if not selected_fuel_prices:
-            st.info("왼쪽 사이드바에서 연료를 선택하면 유가 추이 차트가 표시됩니다.")
+        if not selected_regions:
+            st.info("왼쪽 사이드바에서 지역을 선택하면 유가 추이 차트가 표시됩니다.")
         else:
-            custom_success(f"선택 연료: {', '.join(selected_fuel_prices)} / 기간: {year_range[0]} ~ {year_range[1]}")
-            col1, col2, col3 = st.columns(3)
-            col1.metric("선택 연료 수",  len(selected_fuel_prices))
-            col2.metric("조회 시작 연도", year_range[0])
-            col3.metric("조회 종료 연도", year_range[1])
-            st.markdown("###")
-            c1, c2 = st.columns(2)
-            with c1:
+            custom_success(f"선택 지역: {', '.join(selected_regions)} / 기간: {year_range[0]} ~ {year_range[1]}")
+            
+            # DB에서 유가 데이터 불러오기
+            with DB_connect(DB_CONFIG) as db:
+                print(DB_CONFIG)
+                df_price = db.get_fuel_price_trend()
+                
+            if not df_price.empty:
+                # 기간 및 지역 필터링
+                df_price['YEAR'] = df_price['STAT_YM'].str[:4].astype(int)
+                df_filtered = df_price[(df_price['YEAR'] >= year_range[0]) & (df_price['YEAR'] <= year_range[1])]
+                df_filtered = df_filtered[df_filtered['REGION_NM'].isin(selected_regions)]
+                
+                # X축을 위한 날짜 형식 변환
+                df_filtered['DATE'] = pd.to_datetime(df_filtered['STAT_YM'], format='%Y%m')
+                
+                # 휘발유, 경유 데이터 분리
+                df_gasoline = df_filtered[df_filtered['FUEL_NM'] == '휘발유']
+                df_diesel = df_filtered[df_filtered['FUEL_NM'] == '경유']
+                
+                st.markdown("### 휘발유 가격 추이")
                 with st.container(border=True):
-                    st.markdown("**연도별 유가 변동 추이 차트 영역**")
-                    st.write("예: 연도별 휘발유·경유·LPG 가격 라인차트")
-            with c2:
+                    if not df_gasoline.empty:
+                        fig_gas = px.line(df_gasoline, x="DATE", y="AVG_PRICE", color="REGION_NM",
+                                          title="지역별 휘발유 평균 판매가격 추이",
+                                          labels={"DATE": "시간", "AVG_PRICE": "평균 가격(원/리터)", "REGION_NM": "지역"})
+                        st.plotly_chart(fig_gas, use_container_width=True)
+                    else:
+                        st.warning("선택한 조건에 해당하는 휘발유 데이터가 없습니다.")
+                        
+                st.markdown("### 경유 가격 추이")
                 with st.container(border=True):
-                    st.markdown("**연료별 평균 가격 비교 차트 영역**")
-                    st.write("예: 연료 유형별 평균가 바차트")
-            st.markdown("###")
-            with st.container(border=True):
-                st.markdown("**유가 변동 상세 데이터 테이블 영역**")
-                st.write("예: 연도·연료별 가격 테이블")
+                    if not df_diesel.empty:
+                        fig_diesel = px.line(df_diesel, x="DATE", y="AVG_PRICE", color="REGION_NM",
+                                             title="지역별 경유 평균 판매가격 추이",
+                                             labels={"DATE": "시간", "AVG_PRICE": "평균 가격(원/리터)", "REGION_NM": "지역"})
+                        st.plotly_chart(fig_diesel, use_container_width=True)
+                    else:
+                        st.warning("선택한 조건에 해당하는 경유 데이터가 없습니다.")
+            else:
+                st.error("데이터베이스에서 유가 데이터를 불러오지 못했습니다.")
 
     elif selected_tab == "연료별 현황":
         st.subheader("⛽ 연료별 현황")
@@ -746,10 +728,6 @@ FAQ_DATA = [
 ]
 
 FAQ_TABS     = ["기아", "현대", "제네시스", "브랜드"]
-FUEL_OPTIONS       = ["휘발유", "경유", "전기", "하이브리드(휘발유+전기)", "하이브리드(경유+전기)"]
-FUEL_PRICE_OPTIONS = ["휘발유", "경유", "LPG"]
-TYPE_OPTIONS       = ["승용", "승합", "화물", "특수"]
-USAGE_OPTIONS      = ["비사업용", "사업용"]
 
 
 def page_faq():

@@ -107,13 +107,13 @@ class DB_connect:
                 ON p_gas.STAT_YM = %s AND s.REGION_CD = p_gas.REGION_CD AND p_gas.FUEL_CD = 'F01'
             LEFT JOIN TBL_FUEL_PRICE p_diesel 
                 ON p_diesel.STAT_YM = %s AND s.REGION_CD = p_diesel.REGION_CD AND p_diesel.FUEL_CD = 'F02'
-            LEFT JOIN TB_COMMON_CODE cr 
+            LEFT JOIN TBL_COMMON_CODE cr 
                 ON s.REGION_CD = cr.CODE AND cr.CODE_GROUP = 'REGION'
-            LEFT JOIN TB_COMMON_CODE cf 
+            LEFT JOIN TBL_COMMON_CODE cf 
                 ON s.FUEL_CD = cf.CODE AND cf.CODE_GROUP = 'FUEL'
-            LEFT JOIN TB_COMMON_CODE ct 
+            LEFT JOIN TBL_COMMON_CODE ct 
                 ON s.TYPE_CD = ct.CODE AND ct.CODE_GROUP = 'TYPE'
-            LEFT JOIN TB_COMMON_CODE cu 
+            LEFT JOIN TBL_COMMON_CODE cu 
                 ON s.USAGE_CD = cu.CODE AND cu.CODE_GROUP = 'USAGE'
             WHERE s.STAT_YM = %s
         """
@@ -135,13 +135,13 @@ class DB_connect:
                 ON p_gas.STAT_YM = %s AND s.REGION_CD = p_gas.REGION_CD AND p_gas.FUEL_CD = 'F01'
             LEFT JOIN TBL_FUEL_PRICE p_diesel 
                 ON p_diesel.STAT_YM = %s AND s.REGION_CD = p_diesel.REGION_CD AND p_diesel.FUEL_CD = 'F02'
-            LEFT JOIN TB_COMMON_CODE cr 
+            LEFT JOIN TBL_COMMON_CODE cr 
                 ON s.REGION_CD = cr.CODE AND cr.CODE_GROUP = 'REGION'
-            LEFT JOIN TB_COMMON_CODE cf 
+            LEFT JOIN TBL_COMMON_CODE cf 
                 ON s.FUEL_CD = cf.CODE AND cf.CODE_GROUP = 'FUEL'
-            LEFT JOIN TB_COMMON_CODE ct 
+            LEFT JOIN TBL_COMMON_CODE ct 
                 ON s.TYPE_CD = ct.CODE AND ct.CODE_GROUP = 'TYPE'
-            LEFT JOIN TB_COMMON_CODE cu 
+            LEFT JOIN TBL_COMMON_CODE cu 
                 ON s.USAGE_CD = cu.CODE AND cu.CODE_GROUP = 'USAGE'
             WHERE s.STAT_YM = DATE_FORMAT(STR_TO_DATE(CONCAT(%s, '01'), '%Y%m%d') + INTERVAL 1 MONTH, '%Y%m')
         """
@@ -163,13 +163,13 @@ class DB_connect:
                 ON p_gas.STAT_YM = %s AND s.REGION_CD = p_gas.REGION_CD AND p_gas.FUEL_CD = 'F01'
             LEFT JOIN TBL_FUEL_PRICE p_diesel 
                 ON p_diesel.STAT_YM = %s AND s.REGION_CD = p_diesel.REGION_CD AND p_diesel.FUEL_CD = 'F02'
-            LEFT JOIN TB_COMMON_CODE cr 
+            LEFT JOIN TBL_COMMON_CODE cr 
                 ON s.REGION_CD = cr.CODE AND cr.CODE_GROUP = 'REGION'
-            LEFT JOIN TB_COMMON_CODE cf 
+            LEFT JOIN TBL_COMMON_CODE cf 
                 ON s.FUEL_CD = cf.CODE AND cf.CODE_GROUP = 'FUEL'
-            LEFT JOIN TB_COMMON_CODE ct 
+            LEFT JOIN TBL_COMMON_CODE ct 
                 ON s.TYPE_CD = ct.CODE AND ct.CODE_GROUP = 'TYPE'
-            LEFT JOIN TB_COMMON_CODE cu 
+            LEFT JOIN TBL_COMMON_CODE cu 
                 ON s.USAGE_CD = cu.CODE AND cu.CODE_GROUP = 'USAGE'
             WHERE s.STAT_YM = DATE_FORMAT(STR_TO_DATE(CONCAT(%s, '01'), '%Y%m%d') + INTERVAL 2 MONTH, '%Y%m')
         """
@@ -192,10 +192,10 @@ class DB_connect:
                 ON s.STAT_YM = p_gas.STAT_YM AND s.REGION_CD = p_gas.REGION_CD AND p_gas.FUEL_CD = 'F01'
             LEFT JOIN TBL_FUEL_PRICE p_diesel 
                 ON s.STAT_YM = p_diesel.STAT_YM AND s.REGION_CD = p_diesel.REGION_CD AND p_diesel.FUEL_CD = 'F02'
-            LEFT JOIN TB_COMMON_CODE cr ON s.REGION_CD = cr.CODE AND cr.CODE_GROUP = 'REGION'
-            LEFT JOIN TB_COMMON_CODE cf ON s.FUEL_CD = cf.CODE AND cf.CODE_GROUP = 'FUEL'
-            LEFT JOIN TB_COMMON_CODE ct ON s.TYPE_CD = ct.CODE AND ct.CODE_GROUP = 'TYPE'
-            LEFT JOIN TB_COMMON_CODE cu ON s.USAGE_CD = cu.CODE AND cu.CODE_GROUP = 'USAGE'
+            LEFT JOIN TBL_COMMON_CODE cr ON s.REGION_CD = cr.CODE AND cr.CODE_GROUP = 'REGION'
+            LEFT JOIN TBL_COMMON_CODE cf ON s.FUEL_CD = cf.CODE AND cf.CODE_GROUP = 'FUEL'
+            LEFT JOIN TBL_COMMON_CODE ct ON s.TYPE_CD = ct.CODE AND ct.CODE_GROUP = 'TYPE'
+            LEFT JOIN TBL_COMMON_CODE cu ON s.USAGE_CD = cu.CODE AND cu.CODE_GROUP = 'USAGE'
             ORDER BY s.STAT_YM ASC
         """
         return self.get_query_data(query)
@@ -209,8 +209,8 @@ class DB_connect:
                 cf.CODE_NM AS FUEL_NM,
                 p.AVG_PRICE
             FROM TBL_FUEL_PRICE p
-            LEFT JOIN TB_COMMON_CODE cr ON p.REGION_CD = cr.CODE AND cr.CODE_GROUP = 'REGION'
-            LEFT JOIN TB_COMMON_CODE cf ON p.FUEL_CD = cf.CODE AND cf.CODE_GROUP = 'FUEL'
+            LEFT JOIN TBL_COMMON_CODE cr ON p.REGION_CD = cr.CODE AND cr.CODE_GROUP = 'REGION'
+            LEFT JOIN TBL_COMMON_CODE cf ON p.FUEL_CD = cf.CODE AND cf.CODE_GROUP = 'FUEL'
             ORDER BY p.STAT_YM ASC
         """
         return self.get_query_data(query)
@@ -220,61 +220,34 @@ class DB_connect:
         query = "SELECT DISTINCT STAT_YM FROM TBL_FUEL_PRICE ORDER BY STAT_YM DESC"
         return self.get_query_data(query)
 
+    def get_fuel_price_options(self):
+        """유가 데이터가 있는 연료 유형 검색 (휘발유, 경유)"""
+        query = "SELECT CODE, CODE_NM AS CODE_NAME FROM TBL_COMMON_CODE WHERE CODE IN ('F01', 'F02') ORDER BY SORT_ORDER"
+        return self.get_query_data(query)
+
     def get_fuel_options(self):
         """공통 코드 테이블에서 연료 유형 검색"""
-        query = "SELECT CODE, CODE_NM AS CODE_NAME FROM TB_COMMON_CODE WHERE CODE_GROUP = 'FUEL' AND CODE NOT LIKE 'G_%' ORDER BY SORT_ORDER, CODE"
+        query = "SELECT CODE, CODE_NM AS CODE_NAME FROM TBL_COMMON_CODE WHERE CODE_GROUP = 'FUEL' AND CODE NOT LIKE 'G_%' ORDER BY SORT_ORDER, CODE"
         return self.get_query_data(query)
 
     def get_type_options(self):
         """공통 코드 테이블에서 차종 유형 검색"""
-        query = "SELECT CODE, CODE_NM AS CODE_NAME FROM TB_COMMON_CODE WHERE CODE_GROUP = 'TYPE' AND CODE NOT LIKE 'G_%' ORDER BY SORT_ORDER, CODE"
+        query = "SELECT CODE, CODE_NM AS CODE_NAME FROM TBL_COMMON_CODE WHERE CODE_GROUP = 'TYPE' AND CODE NOT LIKE 'G_%' ORDER BY SORT_ORDER, CODE"
         return self.get_query_data(query)
 
     def get_usage_options(self):
         """공통 코드 테이블에서 차량 용도 검색"""
-        query = "SELECT CODE, CODE_NM AS CODE_NAME FROM TB_COMMON_CODE WHERE CODE_GROUP = 'USAGE' AND CODE NOT LIKE 'G_%' ORDER BY SORT_ORDER, CODE"
+        query = "SELECT CODE, CODE_NM AS CODE_NAME FROM TBL_COMMON_CODE WHERE CODE_GROUP = 'USAGE' AND CODE NOT LIKE 'G_%' ORDER BY SORT_ORDER, CODE"
         return self.get_query_data(query)
 
     def get_region_options(self):
         """공통 코드 테이블에서 지역 검색"""
-        query = "SELECT CODE, CODE_NM AS CODE_NAME FROM TB_COMMON_CODE WHERE CODE_GROUP = 'REGION' AND CODE NOT LIKE 'G_%' ORDER BY SORT_ORDER, CODE"
+        query = "SELECT CODE, CODE_NM AS CODE_NAME FROM TBL_COMMON_CODE WHERE CODE_GROUP = 'REGION' AND CODE NOT LIKE 'G_%' ORDER BY SORT_ORDER, CODE"
         return self.get_query_data(query)
 
     def get_dashboard_tabs(self):
         """공통 코드 테이블에서 대시보드 탭 검색"""
-        query = "SELECT CODE_NM AS CODE_NAME FROM TB_COMMON_CODE WHERE CODE_GROUP = 'DASHBOARD' ORDER BY SORT_ORDER, CODE"
+        query = "SELECT CODE_NM AS CODE_NAME FROM TBL_COMMON_CODE WHERE CODE_GROUP = 'DASHBOARD' ORDER BY SORT_ORDER, CODE"
         return self.get_query_data(query)
 
  
-    def get_fuel_price_options(self):
-        """연료 가격 테이블에서 연료 유형 검색"""
-        query = """
-            SELECT DISTINCT
-                cf.CODE,
-                cf.CODE_NM AS CODE_NAME
-            FROM TBL_FUEL_PRICE p
-            JOIN TB_COMMON_CODE cf ON p.FUEL_CD = cf.CODE AND cf.CODE_GROUP = 'FUEL'
-            ORDER BY cf.SORT_ORDER, cf.CODE
-        """
-        return self.get_query_data(query)
-
-    def get_fuel_prices(self, fuel_names, start_year, end_year):
-        """선택된 연료와 기간에 대한 유가 데이터 조회 (전국 평균)"""
-        if not fuel_names:
-            return pd.DataFrame()
-
-        query = """
-            SELECT 
-                p.STAT_YM,
-                cf.CODE_NM AS FUEL_NM,
-                AVG(p.AVG_PRICE) AS AVG_PRICE
-            FROM TBL_FUEL_PRICE p
-            JOIN TB_COMMON_CODE cf ON p.FUEL_CD = cf.CODE AND cf.CODE_GROUP = 'FUEL'
-            WHERE cf.CODE_NM IN ({})
-            AND SUBSTRING(p.STAT_YM, 1, 4) BETWEEN %s AND %s
-            GROUP BY p.STAT_YM, cf.CODE_NM
-            ORDER BY p.STAT_YM ASC, cf.CODE_NM ASC
-        """.format(', '.join(['%s'] * len(fuel_names)))
-
-        params = tuple(fuel_names) + (str(start_year), str(end_year))
-        return self.get_query_data(query, params)
