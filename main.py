@@ -6,13 +6,60 @@ import plotly.graph_objects as go
 from datetime import datetime
 import os
 from dotenv import load_dotenv
-
-
+from app.db_connect import DB_connect, DB_CONFIG
 load_dotenv()
 
-import streamlit as st
-
 st.set_page_config(page_title="Team 6", layout="wide")
+
+# -----------------------
+# Global Constants & Options
+# -----------------------
+DASHBOARD_TABS = ["개요", "유가 추이", "연료별 현황", "차종·용도 현황", "지역별 현황"]
+
+@st.cache_data
+def load_dynamic_options():
+    """
+    데이터베이스에서 동적 옵션(연료, 차종 등)을 로드합니다.
+    """
+    option_methods = {
+        "FUEL_OPTIONS": "get_fuel_options",
+        "FUEL_PRICE_OPTIONS": "get_fuel_price_options",
+        "TYPE_OPTIONS": "get_type_options",
+        "USAGE_OPTIONS": "get_usage_options",
+        "REGION_OPTIONS": "get_region_options"
+    }
+
+    loaded_options = {
+        "FUEL_OPTIONS": [],
+        "FUEL_PRICE_OPTIONS": [],
+        "TYPE_OPTIONS": [],
+        "USAGE_OPTIONS": [],
+        "REGION_OPTIONS": []
+    }
+
+    try:
+        with DB_connect(DB_CONFIG) as db:
+            for key, method_name in option_methods.items():
+                df = getattr(db, method_name)()
+                if not df.empty and 'CODE_NAME' in df.columns:
+                    db_options = df['CODE_NAME'].tolist()
+                    if db_options:
+                        loaded_options[key] = db_options
+    except Exception as e:
+        print(f"Database error during option loading: {e}. Returning empty lists.")
+        # In case of any exception, return the dictionary with empty lists
+        return loaded_options
+
+    return loaded_options
+
+# Load dynamic options once and use them throughout the app
+dynamic_options = load_dynamic_options()
+FUEL_OPTIONS = dynamic_options["FUEL_OPTIONS"]
+FUEL_PRICE_OPTIONS = dynamic_options["FUEL_PRICE_OPTIONS"]
+TYPE_OPTIONS = dynamic_options["TYPE_OPTIONS"]
+USAGE_OPTIONS = dynamic_options["USAGE_OPTIONS"]
+REGION_OPTIONS = dynamic_options["REGION_OPTIONS"]
+
 
 # -----------------------
 # 전역 CSS (1회만 주입)
@@ -441,13 +488,53 @@ def page_team():
 # -----------------------
 # 페이지: 대시보드
 # -----------------------
-DASHBOARD_TABS     = ["개요", "유가 추이", "연료별 현황", "차종·용도 현황", "지역별 현황"]
-FUEL_OPTIONS       = ["휘발유", "경유", "전기", "하이브리드(휘발유+전기)", "하이브리드(경유+전기)"]
-FUEL_PRICE_OPTIONS = ["휘발유", "경유", "LPG"]
-TYPE_OPTIONS       = ["승용", "승합", "화물", "특수"]
-USAGE_OPTIONS      = ["비사업용", "사업용"]
-REGION_OPTIONS     = ["서울", "부산", "대구", "인천", "광주", "대전", "울산", "세종",
-                      "경기", "강원", "충북", "충남", "전북", "전남", "경북", "경남", "제주"]
+DASHBOARD_TABS = ["개요", "유가 추이", "연료별 현황", "차종·용도 현황", "지역별 현황"]
+
+@st.cache_data
+def load_dynamic_options():
+    """
+    데이터베이스에서 동적 옵션(연료, 차종 등)을 로드하고, 실패 시 기본값을 사용합니다.
+    """
+    default_options = {
+        "FUEL_OPTIONS": ["휘발유", "경유", "전기", "하이브리드(휘발유+전기)", "하이브리드(경유+전기)"],
+        "FUEL_PRICE_OPTIONS": ["휘발유", "경유", "LPG"],
+        "TYPE_OPTIONS": ["승용", "승합", "화물", "특수"],
+        "USAGE_OPTIONS": ["비사업용", "사업용"],
+        "REGION_OPTIONS": ["서울", "부산", "대구", "인천", "광주", "대전", "울산", "세종", "경기", "강원", "충북", "충남", "전북", "전남", "경북", "경남", "제주"]
+    }
+    
+    option_methods = {
+        "FUEL_OPTIONS": "get_fuel_options",
+        "FUEL_PRICE_OPTIONS": "get_fuel_price_options",
+        "TYPE_OPTIONS": "get_type_options",
+        "USAGE_OPTIONS": "get_usage_options",
+        "REGION_OPTIONS": "get_region_options"
+    }
+
+    loaded_options = default_options.copy()
+
+    try:
+        with DB_connect(DB_CONFIG) as db:
+            for key, method_name in option_methods.items():
+                df = getattr(db, method_name)()
+                if not df.empty and 'CODE_NAME' in df.columns:
+                    db_options = df['CODE_NAME'].tolist()
+                    if db_options:
+                        loaded_options[key] = db_options
+    except Exception as e:
+        print(f"Database error during option loading: {e}. Using default values.")
+        return default_options
+
+    return loaded_options
+
+# Load dynamic options once
+dynamic_options = load_dynamic_options()
+FUEL_OPTIONS = dynamic_options["FUEL_OPTIONS"]
+FUEL_PRICE_OPTIONS = dynamic_options["FUEL_PRICE_OPTIONS"]
+TYPE_OPTIONS = dynamic_options["TYPE_OPTIONS"]
+USAGE_OPTIONS = dynamic_options["USAGE_OPTIONS"]
+REGION_OPTIONS = dynamic_options["REGION_OPTIONS"]
+
 
 def page_dashboard():
     render_page_header("""
@@ -919,18 +1006,3 @@ else:
     st.error("알 수 없는 페이지입니다.")
     if st.button("홈으로"):
         go_to("main")   # ← "start" → "main" 수정
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
