@@ -6,13 +6,15 @@ import plotly.graph_objects as go
 from datetime import datetime
 import os
 from dotenv import load_dotenv
+import base64
 
 
 load_dotenv()
 
 import streamlit as st
 
-st.set_page_config(page_title="Team 6", layout="wide")
+st.set_page_config(page_title="Team 6", layout="wide",
+                   initial_sidebar_state="expanded")
 
 # -----------------------
 # 전역 CSS (1회만 주입)
@@ -26,16 +28,35 @@ def inject_global_css():
         background: #E3E7EB;
         color: #1f2937;
     }
+    
     .custom-header {
-        background: linear-gradient(180deg, #161A1F 0%, #24282D 55%, #4B5158 100%);
-        padding: 24px 30px;
-        border-radius: 16px;
-        margin-bottom: 12px;
-        color: white;
+    background: linear-gradient(180deg, #161A1F 0%, #24282D 55%, #4B5158 100%);
+    padding: 24px 30px;
+    border-radius: 16px;
+    margin-bottom: 12px;
+    color: white;
+    overflow: hidden;
     }
-    .custom-header h1 { margin: 0; font-size: 30px; }
-    .custom-header p  { margin: 8px 0 0 0; font-size: 15px; opacity: 0.92; }
 
+    
+    
+    .custom-header-title {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 700;
+        color: white;
+        line-height: 1.25;
+    }
+
+    .custom-header-desc {
+        margin-top: 8px;
+        font-size: 14px;
+        opacity: 0.92;
+        color: white;
+        line-height: 1.6;
+    }
+                
+    
     .st-key-nav_home_1 button, .st-key-nav_home_2 button, .st-key-nav_home_3 button,
     .st-key-nav_dash_1 button, .st-key-nav_dash_2 button,
     .st-key-nav_contact_1 button,
@@ -98,6 +119,13 @@ def inject_global_css():
         font-weight: 700;
         margin-bottom: 12px;
     }
+                
+    .double-divider {
+        border-top: 1px solid #24282D;
+        border-bottom: 1px solid #24282D;
+        height: 4px;
+        margin: 12px 0 18px 0;
+    }
 
     </style>
     """, unsafe_allow_html=True)
@@ -129,20 +157,36 @@ def custom_success(message: str):
         unsafe_allow_html=True,
     )
 
+
 def render_high():
     _,col1 = st.columns([9,1])
     with col1:
         if st.button("🏠", key="to_main", use_container_width=True, type="tertiary"):
                 go_to("main")
 
+def get_image_base64(path):
+    with open(path, "rb") as f:
+        return base64.b64encode(f.read()).decode()
+
 def render_header():
-    st.markdown("""
-        <div class="custom-header">
-            <h1>전국 자동차 등록 현황과 유가 변동</h1>
-            <p>자동차 등록 데이터와 유가 변동을 탐색하고 비교하는 서비스</p>
+    image_base64 = get_image_base64("image/img_ex4.jpg")
+
+    st.markdown(f"""
+        <div style="margin-bottom: 12px;">
+            <img
+                src="data:image/jpg;base64,{image_base64}"
+                style="
+                    width: 100%;
+                    height: auto;
+                    object-fit: cover;
+                    border-radius: 16px;
+                    display: block;
+                "
+            >
         </div>
     """, unsafe_allow_html=True)
-    st.divider()
+   
+    st.markdown("")
 
 def render_top_nav():
     with st.container(border=False):
@@ -173,13 +217,14 @@ def render_page_header(hero_html: str):
     render_high()
     render_header()
     render_top_nav()
-    st.divider()
-    st.divider()
+    st.markdown("""
+    <div class="double-divider"></div>
+    """, unsafe_allow_html=True)
     st.markdown(hero_html, unsafe_allow_html=True)
     
 
 # -----------------------
-# 서비스 소개 본문 (main, intro 공용)
+# 서비스 소개 본문 
 # -----------------------
 def render_intro_content():
     st.markdown("###")
@@ -307,13 +352,13 @@ def page_data_guide():
     <div class="page-section">
         <div class="page-section-title">🗂️ 데이터 설명</div>
         <div class="page-section-body">
-            서비스에서 활용하는 자동차 등록 현황 데이터와<br>유가 변동 데이터의
+            서비스에서 활용하는 자동차 등록 현황 데이터와 유가 변동 데이터의
             구성 항목 및 분류 기준을 안내합니다.
         </div>
     </div>
     """)
     st.markdown("###")
-    col1, col2 = st.columns(2)
+    col1, col2, = st.columns(2)
     with col1:
         st.markdown("""
         <div class="page-card">
@@ -322,7 +367,7 @@ def page_data_guide():
                 • 휘발유<br>• 경유<br>• 전기<br>
                 • 하이브리드(휘발유+전기)<br>
                 • 하이브리드(경유+전기)<br><br>
-                내연기관차와 친환경차의 구성 차이를<br>비교할 수 있습니다.
+                내연기관차와 친환경차의 구성 차이를 비교할 수 있습니다.
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -332,7 +377,7 @@ def page_data_guide():
             <div class="page-card-title">🚘 차종 기준</div>
             <div class="page-card-body">
                 • 승용<br>• 승합<br>• 화물<br>• 특수<br><br><br>
-                차량 유형별 등록 현황과 분포를<br>확인할 수 있습니다.
+                차량 유형별 등록 현황과 분포를 확인할 수 있습니다.
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -344,7 +389,7 @@ def page_data_guide():
             <div class="page-card-title">🏷️ 용도 기준</div>
             <div class="page-card-body">
                 • 비사업용<br>• 사업용<br><br>
-                개인 및 기업·운송 목적 차량의 구성을<br>비교할 수 있습니다.
+                개인 및 기업·운송 목적 차량의 구성을 비교할 수 있습니다.
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -355,7 +400,7 @@ def page_data_guide():
             <div class="page-card-body">
                 • 시 &nbsp; : &nbsp; 서울, &nbsp; 부산, &nbsp; 인천, &nbsp; 대구, &nbsp; 대전, &nbsp; 광주, &nbsp; 울산, &nbsp; 세종<br>
                 • 도 &nbsp; : &nbsp; 경기, &nbsp; 충북, &nbsp; 충남, &nbsp; 전남, &nbsp; 경북, &nbsp; 경남, &nbsp; 강원, &nbsp; 전북, &nbsp; 제주<br><br>
-                전국 17개 시도 기준입니다.<br><br>
+                전국 17개 시도 기준입니다.
             </div>
         </div>
         """, unsafe_allow_html=True)
