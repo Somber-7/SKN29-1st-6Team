@@ -91,90 +91,6 @@ class DB_connect:
             print(f"데이터 조회 및 변환 오류: {e}")
             return pd.DataFrame()
 
-    def get_analysis_current_month(self, stat_ym):
-        """선택한 기간의 연료 가격과 자동차 등록 대수 간 당월 데이터 확인"""
-        query = """
-            SELECT
-                cr.CODE_NM AS REGION_NM,
-                cf.CODE_NM AS FUEL_NM,
-                ct.CODE_NM AS TYPE_NM,
-                cu.CODE_NM AS USAGE_NM,
-                s.REG_CNT,
-                p_gas.AVG_PRICE AS GASOLINE_PRICE,
-                p_diesel.AVG_PRICE AS DIESEL_PRICE
-            FROM TBL_FUEL_REG_STAT s
-            LEFT JOIN TBL_FUEL_PRICE p_gas 
-                ON p_gas.STAT_YM = %s AND s.REGION_CD = p_gas.REGION_CD AND p_gas.FUEL_CD = 'F01'
-            LEFT JOIN TBL_FUEL_PRICE p_diesel 
-                ON p_diesel.STAT_YM = %s AND s.REGION_CD = p_diesel.REGION_CD AND p_diesel.FUEL_CD = 'F02'
-            LEFT JOIN TBL_COMMON_CODE cr 
-                ON s.REGION_CD = cr.CODE AND cr.CODE_GROUP = 'REGION'
-            LEFT JOIN TBL_COMMON_CODE cf 
-                ON s.FUEL_CD = cf.CODE AND cf.CODE_GROUP = 'FUEL'
-            LEFT JOIN TBL_COMMON_CODE ct 
-                ON s.TYPE_CD = ct.CODE AND ct.CODE_GROUP = 'TYPE'
-            LEFT JOIN TBL_COMMON_CODE cu 
-                ON s.USAGE_CD = cu.CODE AND cu.CODE_GROUP = 'USAGE'
-            WHERE s.STAT_YM = %s
-        """
-        return self.get_query_data(query, (stat_ym, stat_ym, stat_ym))
-
-    def get_analysis_next_month(self, stat_ym):
-        """선택한 기간의 연료 가격과 1달 후 자동차 등록 대수 데이터 확인"""
-        query = """
-            SELECT
-                cr.CODE_NM AS REGION_NM,
-                cf.CODE_NM AS FUEL_NM,
-                ct.CODE_NM AS TYPE_NM,
-                cu.CODE_NM AS USAGE_NM,
-                s.REG_CNT,
-                p_gas.AVG_PRICE AS GASOLINE_PRICE,
-                p_diesel.AVG_PRICE AS DIESEL_PRICE
-            FROM TBL_FUEL_REG_STAT s
-            LEFT JOIN TBL_FUEL_PRICE p_gas 
-                ON p_gas.STAT_YM = %s AND s.REGION_CD = p_gas.REGION_CD AND p_gas.FUEL_CD = 'F01'
-            LEFT JOIN TBL_FUEL_PRICE p_diesel 
-                ON p_diesel.STAT_YM = %s AND s.REGION_CD = p_diesel.REGION_CD AND p_diesel.FUEL_CD = 'F02'
-            LEFT JOIN TBL_COMMON_CODE cr 
-                ON s.REGION_CD = cr.CODE AND cr.CODE_GROUP = 'REGION'
-            LEFT JOIN TBL_COMMON_CODE cf 
-                ON s.FUEL_CD = cf.CODE AND cf.CODE_GROUP = 'FUEL'
-            LEFT JOIN TBL_COMMON_CODE ct 
-                ON s.TYPE_CD = ct.CODE AND ct.CODE_GROUP = 'TYPE'
-            LEFT JOIN TBL_COMMON_CODE cu 
-                ON s.USAGE_CD = cu.CODE AND cu.CODE_GROUP = 'USAGE'
-            WHERE s.STAT_YM = DATE_FORMAT(STR_TO_DATE(CONCAT(%s, '01'), '%Y%m%d') + INTERVAL 1 MONTH, '%Y%m')
-        """
-        return self.get_query_data(query, (stat_ym, stat_ym, stat_ym))
-
-    def get_analysis_month_after_next(self, stat_ym):
-        """선택한 기간의 연료 가격과 2달 후 자동차 등록 대수 데이터 확인"""
-        query = """
-            SELECT
-                cr.CODE_NM AS REGION_NM,
-                cf.CODE_NM AS FUEL_NM,
-                ct.CODE_NM AS TYPE_NM,
-                cu.CODE_NM AS USAGE_NM,
-                s.REG_CNT,
-                p_gas.AVG_PRICE AS GASOLINE_PRICE,
-                p_diesel.AVG_PRICE AS DIESEL_PRICE
-            FROM TBL_FUEL_REG_STAT s
-            LEFT JOIN TBL_FUEL_PRICE p_gas 
-                ON p_gas.STAT_YM = %s AND s.REGION_CD = p_gas.REGION_CD AND p_gas.FUEL_CD = 'F01'
-            LEFT JOIN TBL_FUEL_PRICE p_diesel 
-                ON p_diesel.STAT_YM = %s AND s.REGION_CD = p_diesel.REGION_CD AND p_diesel.FUEL_CD = 'F02'
-            LEFT JOIN TBL_COMMON_CODE cr 
-                ON s.REGION_CD = cr.CODE AND cr.CODE_GROUP = 'REGION'
-            LEFT JOIN TBL_COMMON_CODE cf 
-                ON s.FUEL_CD = cf.CODE AND cf.CODE_GROUP = 'FUEL'
-            LEFT JOIN TBL_COMMON_CODE ct 
-                ON s.TYPE_CD = ct.CODE AND ct.CODE_GROUP = 'TYPE'
-            LEFT JOIN TBL_COMMON_CODE cu 
-                ON s.USAGE_CD = cu.CODE AND cu.CODE_GROUP = 'USAGE'
-            WHERE s.STAT_YM = DATE_FORMAT(STR_TO_DATE(CONCAT(%s, '01'), '%Y%m%d') + INTERVAL 2 MONTH, '%Y%m')
-        """
-        return self.get_query_data(query, (stat_ym, stat_ym, stat_ym))
-
     def get_trend_analysis_data(self):
         """유가(휘발유/경유 기준선)와 전체 차량 등록 대수의 시계열 추세 조회"""
         query = """
@@ -250,4 +166,54 @@ class DB_connect:
         query = "SELECT CODE_NM AS CODE_NAME FROM TBL_COMMON_CODE WHERE CODE_GROUP = 'DASHBOARD' ORDER BY SORT_ORDER, CODE"
         return self.get_query_data(query)
 
- 
+def get_fuel_registration_data(stat_ym):
+    """지정된 연월의 연료별 차량 등록 현황 데이터를 조회."""
+    query = """
+        SELECT
+            tcc.CODE_NM AS 연료,
+            SUM(tfrs.REG_CNT) AS 등록대수
+        FROM TBL_FUEL_REG_STAT tfrs
+        JOIN TBL_COMMON_CODE tcc
+            ON tfrs.FUEL_CD = tcc.CODE
+        WHERE tcc.CODE_GROUP = 'FUEL' AND tfrs.STAT_YM = %s
+        GROUP BY tfrs.FUEL_CD, tcc.CODE_NM
+        ORDER BY 등록대수 DESC;
+    """
+    with DB_connect(DB_CONFIG) as db:
+        df = db.get_query_data(query, (stat_ym,))
+    return df
+
+def get_type_registration_data(stat_ym):
+    """지정된 연월의 차종별 차량 등록 현황 데이터를 조회합니다."""
+    query = """
+        SELECT
+            tcc.CODE_NM AS 차종,
+            SUM(tfrs.REG_CNT) AS 등록대수
+        FROM TBL_FUEL_REG_STAT tfrs
+        JOIN TBL_COMMON_CODE tcc
+            ON tfrs.TYPE_CD = tcc.CODE
+        WHERE tcc.CODE_GROUP = 'TYPE' AND tfrs.STAT_YM = %s
+        GROUP BY tfrs.TYPE_CD, tcc.CODE_NM
+        ORDER BY 등록대수 DESC;
+    """
+    with DB_connect(DB_CONFIG) as db:
+        df = db.get_query_data(query, (stat_ym,))
+    return df
+
+def get_national_average_fuel_price_trend():
+    """전국 월별 평균 유가(휘발유, 경유) 추이 데이터 조회"""
+    query = """
+        SELECT
+            p.STAT_YM,
+            cf.CODE_NM AS FUEL_NM,
+            AVG(p.AVG_PRICE) AS AVG_PRICE
+        FROM TBL_FUEL_PRICE p
+        JOIN TBL_COMMON_CODE cf
+            ON p.FUEL_CD = cf.CODE AND cf.CODE_GROUP = 'FUEL'
+        WHERE cf.CODE_NM IN ('휘발유', '경유')
+        GROUP BY p.STAT_YM, cf.CODE_NM
+        ORDER BY p.STAT_YM ASC;
+    """
+    with DB_connect(DB_CONFIG) as db:
+        df = db.get_query_data(query)
+    return df

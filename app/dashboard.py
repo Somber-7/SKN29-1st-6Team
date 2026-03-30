@@ -1,11 +1,19 @@
 import streamlit as st
+import plotly.express as px
+import pandas as pd
 from app.utils import (
     render_page_header, custom_success,
     FUEL_OPTIONS, FUEL_PRICE_OPTIONS,
     TYPE_OPTIONS, USAGE_OPTIONS, REGION_OPTIONS,
 )
+from app.db_connect import (
+    DB_connect, DB_CONFIG,
+    get_fuel_registration_data, get_type_registration_data,
+    get_national_average_fuel_price_trend
+)
 
 DASHBOARD_TABS = ["개요", "유가 추이", "연료별 현황", "차종·용도 현황", "지역별 현황"]
+
 
 def page_dashboard():
     render_page_header("""
@@ -22,27 +30,66 @@ def page_dashboard():
     with col1:
         st.markdown("2026년 2월 기준")
 
+    STAT_YM = '202602'
     c1, c2 = st.columns(2)
     with c1:
         with st.container(border=True):
-            st.markdown("차트 영역 1")
-            st.write("예 : 연료별")
+            st.markdown("**202602 연료별 등록 현황**")
+            # 함수 파라미터 제거됨
+            fuel_data = get_fuel_registration_data(STAT_YM) 
+            
+            if not fuel_data.empty:
+                # Plotly 파이 차트 생성
+                fig_fuel = px.pie(fuel_data, values='등록대수', names='연료', hole=0.3)
+                fig_fuel.update_traces(textposition='inside', textinfo='percent+label')
+                st.plotly_chart(fig_fuel, use_container_width=True)
+            else:
+                st.info("연료별 등록 현황 데이터가 없습니다.")
+                
     with c2:
         with st.container(border=True):
-            st.markdown("차트 영역 2")
-            st.write("예:차종별")
+            st.markdown("**202602 차종별 등록 현황**")
+            # 함수 파라미터 제거됨
+            type_data = get_type_registration_data(STAT_YM) 
+            
+            if not type_data.empty:
+                # Plotly 파이 차트 생성
+                fig_type = px.pie(type_data, values='등록대수', names='차종', hole=0.3)
+                fig_type.update_traces(textposition='inside', textinfo='percent+label')
+                st.plotly_chart(fig_type, use_container_width=True)
+            else:
+                st.info("차종별 등록 현황 데이터가 없습니다.")
 
     st.markdown("##")
 
     t1, t2 = st.columns(2)
-    with t1:
-        with st.container(border=True):
-            st.markdown("차트 영역 1")
-            st.write("예 : 휘발유 가격 추이")
-    with t2:
-        with st.container(border=True):
-            st.markdown("차트 영역 2")
-            st.write("예:경유 가격 추이")
+    price_data = get_national_average_fuel_price_trend()
+
+    if not price_data.empty:
+        price_data['DATE'] = pd.to_datetime(price_data['STAT_YM'], format='%Y%m')
+        gasoline_data = price_data[price_data['FUEL_NM'] == '휘발유']
+        diesel_data = price_data[price_data['FUEL_NM'] == '경유']
+
+        with t1:
+            with st.container(border=True):
+                st.markdown("**전국 휘발유 가격 추이**")
+                if not gasoline_data.empty:
+                    fig_gas = px.line(gasoline_data, x='DATE', y='AVG_PRICE')
+                    fig_gas.update_layout(xaxis_title="기간", yaxis_title="평균 가격 (원/L)")
+                    st.plotly_chart(fig_gas, use_container_width=True)
+                else:
+                    st.info("휘발유 가격 데이터가 없습니다.")
+        with t2:
+            with st.container(border=True):
+                st.markdown("**전국 경유 가격 추이**")
+                if not diesel_data.empty:
+                    fig_diesel = px.line(diesel_data, x='DATE', y='AVG_PRICE', color_discrete_sequence=['orange'])
+                    fig_diesel.update_layout(xaxis_title="기간", yaxis_title="평균 가격 (원/L)")
+                    st.plotly_chart(fig_diesel, use_container_width=True)
+                else:
+                    st.info("경유 가격 데이터가 없습니다.")
+    else:
+        st.info("유가 추이 데이터를 불러올 수 없습니다.")
 
     
 
