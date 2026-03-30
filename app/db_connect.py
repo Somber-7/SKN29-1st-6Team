@@ -217,3 +217,77 @@ def get_national_average_fuel_price_trend():
     with DB_connect(DB_CONFIG) as db:
         df = db.get_query_data(query)
     return df
+
+
+# ─────────────────────────────────────────────
+# FAQ 조회 함수
+# ─────────────────────────────────────────────
+
+def get_faq_cat1_options(table: str) -> list:
+    """대분류(cat1) 목록 조회 — cat1/cat2 구조 테이블용 (현대, 제네시스)"""
+    query = f"SELECT DISTINCT cat1 FROM `{table}` ORDER BY cat1"
+    with DB_connect(DB_CONFIG) as db:
+        df = db.get_query_data(query)
+    return df['cat1'].tolist() if not df.empty else []
+
+
+def get_faq_cat2_options(table: str, cat1: str) -> list:
+    """소분류(cat2) 목록 조회 — 선택된 cat1 기준, 빈 값 제외"""
+    query = f"SELECT DISTINCT cat2 FROM `{table}` WHERE cat1 = %s AND cat2 != '' ORDER BY cat2"
+    with DB_connect(DB_CONFIG) as db:
+        df = db.get_query_data(query, (cat1,))
+    return df['cat2'].tolist() if not df.empty else []
+
+
+def get_faq_cat_options(table: str) -> list:
+    """단일 카테고리(cat) 목록 조회 — cat 구조 테이블용 (기아, KGM)"""
+    query = f"SELECT DISTINCT cat FROM `{table}` ORDER BY cat"
+    with DB_connect(DB_CONFIG) as db:
+        df = db.get_query_data(query)
+    return df['cat'].tolist() if not df.empty else []
+
+
+def get_faq_list_dual(
+    table: str,
+    cat1: str = None,
+    cat2: str = None,
+    keyword: str = '',
+) -> list:
+    """cat1/cat2 구조 테이블 FAQ 조회 (현대, 제네시스)"""
+    conditions, params = [], []
+    if cat1:
+        conditions.append("cat1 = %s")
+        params.append(cat1)
+    if cat2:
+        conditions.append("cat2 = %s")
+        params.append(cat2)
+    kw = keyword.strip()
+    if kw:
+        conditions.append("(subject LIKE %s OR content LIKE %s)")
+        params.extend([f"%{kw}%", f"%{kw}%"])
+    where = f"WHERE {' AND '.join(conditions)}" if conditions else ""
+    query = f"SELECT cat1, cat2, subject, content FROM `{table}` {where} ORDER BY id"
+    with DB_connect(DB_CONFIG) as db:
+        df = db.get_query_data(query, tuple(params) if params else None)
+    return df.to_dict('records') if not df.empty else []
+
+
+def get_faq_list_single(
+    table: str,
+    cat: str = None,
+    keyword: str = '',
+) -> list:
+    """단일 cat 구조 테이블 FAQ 조회 (기아, KGM)"""
+    conditions, params = [], []
+    if cat:
+        conditions.append("cat = %s")
+        params.append(cat)
+    kw = keyword.strip()
+    if kw:
+        conditions.append("(subject LIKE %s OR content LIKE %s)")
+        params.extend([f"%{kw}%", f"%{kw}%"])
+    where = f"WHERE {' AND '.join(conditions)}" if conditions else ""
+    query = f"SELECT cat, subject, content FROM `{table}` {where} ORDER BY id"
+    with DB_connect(DB_CONFIG) as db:
+        df = db.get_query_data(query, tuple(params) if params else None)
+    return df.to_dict('records') if not df.empty else []
