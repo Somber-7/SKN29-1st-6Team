@@ -505,12 +505,14 @@ def page_team():
 # -----------------------
 # 페이지: 대시보드
 # -----------------------
-DASHBOARD_TABS  = ["개요", "연료별 현황", "차종·용도 현황", "지역별 현황"]
+DASHBOARD_TABS  = ["개요", "유가 추이", "연료별 현황", "차종·용도 현황", "지역별 현황"]  # ← 추가
 FUEL_OPTIONS    = ["휘발유", "경유", "전기", "하이브리드(휘발유+전기)", "하이브리드(경유+전기)"]
 TYPE_OPTIONS    = ["승용", "승합", "화물", "특수"]
 USAGE_OPTIONS   = ["비사업용", "사업용"]
 REGION_OPTIONS  = ["서울", "부산", "대구", "인천", "광주", "대전", "울산", "세종",
                    "경기", "강원", "충북", "충남", "전북", "전남", "경북", "경남", "제주"]
+
+FUEL_PRICE_OPTIONS = ["휘발유", "경유", "LPG"]  # 유가 추이용 연료 옵션
 
 def page_dashboard():
     render_page_header("""
@@ -526,6 +528,8 @@ def page_dashboard():
     selected_tab = st.segmented_control(None, DASHBOARD_TABS, default="개요")
 
     selected_fuels = selected_types = selected_usages = selected_regions = []
+    selected_fuel_prices = []
+
     with st.sidebar:
         st.markdown("""
         <div style="color:#4b5563; font-size:15px; font-weight:800;
@@ -537,7 +541,11 @@ def page_dashboard():
         st.markdown("##")
         st.header("📌 대시보드 필터")
 
-        if selected_tab == "연료별 현황":
+        if selected_tab == "유가 추이":
+            selected_fuel_prices = st.multiselect("연료 선택", FUEL_PRICE_OPTIONS, placeholder="연료를 선택하세요")
+            st.divider()
+            year_range = st.slider("기간 선택", min_value=2015, max_value=2024, value=(2020, 2024))
+        elif selected_tab == "연료별 현황":
             selected_fuels   = st.multiselect("연료 선택", FUEL_OPTIONS,  placeholder="연료를 선택하세요")
         elif selected_tab == "차종·용도 현황":
             selected_types   = st.multiselect("차종 선택", TYPE_OPTIONS,   placeholder="차종을 선택하세요")
@@ -547,15 +555,22 @@ def page_dashboard():
         else:
             st.caption("개요 탭은 별도 필터 없이 전체 현황을 보여줍니다.")
 
+    # ── 개요 ──
     if selected_tab == "개요":
-        st.markdown("###")
+        st.write("")
         st.subheader("⭐ 전체 현황 개요")
-        col1, col2, col3, col4 = st.columns(4)
-        col1.metric("전체 등록 대수", "예시값")
-        col2.metric("연료 종류 수", "5")
-        col3.metric("차종 종류 수", "4")
-        col4.metric("지역 수", "17")
-        st.markdown("###")
+
+        a1, a2, a3, a4, a5, a6 = st.columns(6)
+        for col, label, val in zip(
+            [a1, a2, a3, a4, a5, a6],
+            ["전체 등록 대수", "연료", "차종", "유가", "지역", "OO"],
+            ["예시값", "5", "3", "1", "17", "13"],
+        ):
+            with col:
+                with st.container(border=True):
+                    st.markdown(label)
+                    st.write(val)
+
         c1, c2 = st.columns(2)
         with c1:
             with st.container(border=True):
@@ -566,6 +581,36 @@ def page_dashboard():
                 st.markdown("**주요 비중 비교 차트 영역**")
                 st.write("예: 연료별 비중 / 차종별 비중")
 
+    # ── 유가 추이 (신규) ──
+    elif selected_tab == "유가 추이":
+        st.subheader("💰 유가 추이")
+        if not selected_fuel_prices:
+            st.info("왼쪽 사이드바에서 연료를 선택하면 유가 추이 차트가 표시됩니다.")
+        else:
+            custom_success(f"선택 연료: {', '.join(selected_fuel_prices)} / 기간: {year_range[0]} ~ {year_range[1]}")
+
+            col1, col2, col3 = st.columns(3)
+            col1.metric("선택 연료 수",  len(selected_fuel_prices))
+            col2.metric("조회 시작 연도", year_range[0])
+            col3.metric("조회 종료 연도", year_range[1])
+
+            st.markdown("###")
+            c1, c2 = st.columns(2)
+            with c1:
+                with st.container(border=True):
+                    st.markdown("**연도별 유가 변동 추이 차트 영역**")
+                    st.write("예: 연도별 휘발유·경유·LPG 가격 라인차트")
+            with c2:
+                with st.container(border=True):
+                    st.markdown("**연료별 평균 가격 비교 차트 영역**")
+                    st.write("예: 연료 유형별 평균가 바차트")
+
+            st.markdown("###")
+            with st.container(border=True):
+                st.markdown("**유가 변동 상세 데이터 테이블 영역**")
+                st.write("예: 연도·연료별 가격 테이블")
+
+    # ── 연료별 현황 ──
     elif selected_tab == "연료별 현황":
         st.subheader("⛽ 연료별 현황")
         if not selected_fuels:
@@ -573,8 +618,8 @@ def page_dashboard():
         else:
             custom_success(f"선택 연료: {', '.join(selected_fuels)}")
             col1, col2, col3 = st.columns(3)
-            col1.metric("선택 연료 수", len(selected_fuels))
-            col2.metric("총 등록 대수", "예시값")
+            col1.metric("선택 연료 수",  len(selected_fuels))
+            col2.metric("총 등록 대수",  "예시값")
             col3.metric("최다 비중 연료", "예시값")
             st.markdown("###")
             c1, c2 = st.columns(2)
@@ -583,6 +628,7 @@ def page_dashboard():
             with c2:
                 with st.container(border=True): st.write("연료별 비율 차트 영역")
 
+    # ── 차종·용도 현황 ──
     elif selected_tab == "차종·용도 현황":
         st.subheader("🚘 차종·용도 현황")
         if not selected_types and not selected_usages:
@@ -603,6 +649,7 @@ def page_dashboard():
             with c2:
                 with st.container(border=True): st.write("용도별 등록 현황 차트 영역")
 
+    # ── 지역별 현황 ──
     elif selected_tab == "지역별 현황":
         st.subheader("🗺️ 지역별 현황")
         if not selected_regions:
@@ -610,8 +657,8 @@ def page_dashboard():
         else:
             custom_success(f"선택 지역: {', '.join(selected_regions)}")
             col1, col2, col3 = st.columns(3)
-            col1.metric("선택 지역 수", len(selected_regions))
-            col2.metric("총 등록 대수", "예시값")
+            col1.metric("선택 지역 수",  len(selected_regions))
+            col2.metric("총 등록 대수",  "예시값")
             col3.metric("최다 등록 지역", "예시값")
             st.markdown("###")
             c1, c2 = st.columns(2)
@@ -619,7 +666,6 @@ def page_dashboard():
                 with st.container(border=True): st.write("지역별 등록 대수 차트 영역")
             with c2:
                 with st.container(border=True): st.write("지역별 비율 차트 영역")
-
 # -----------------------
 # 페이지: 분석
 # -----------------------
