@@ -122,20 +122,20 @@ class DB_connect:
 
     def get_fuel_options(self):
         """공통 코드 테이블에서 연료 유형 검색"""
-        query = "SELECT CODE, CODE_NAME FROM tb_common_code WHERE GROUP_CD = 'FUEL' ORDER BY SORT_ORDER, CODE"
+        query = "SELECT CODE, CODE_NAME FROM tb_common_code WHERE GROUP_CD = 'FUEL' AND CODE NOT LIKE 'G_%' ORDER BY SORT_ORDER, CODE"
         return self.get_query_data(query)
 
     def get_type_options(self):
         """공통 코드 테이블에서 차종 유형 검색"""
-        query = "SELECT CODE, CODE_NAME FROM tb_common_code WHERE GROUP_CD = 'TYPE' ORDER BY SORT_ORDER, CODE"
+        query = "SELECT CODE, CODE_NAME FROM tb_common_code WHERE GROUP_CD = 'TYPE' AND CODE NOT LIKE 'G_%' ORDER BY SORT_ORDER, CODE"
         return self.get_query_data(query)
 
     def get_usage_options(self):
         """공통 코드 테이블에서 차량 용도 검색"""
-        query = "SELECT CODE, CODE_NAME FROM tb_common_code WHERE GROUP_CD = 'USAGE' ORDER BY SORT_ORDER, CODE"
+        query = "SELECT CODE, CODE_NAME FROM tb_common_code WHERE GROUP_CD = 'USAGE' AND CODE NOT LIKE 'G_%' ORDER BY SORT_ORDER, CODE"
         return self.get_query_data(query)
 
     def get_region_options(self):
         """공통 코드 테이블에서 지역 검색"""
-        query = "SELECT CODE, CODE_NAME FROM tb_common_code WHERE GROUP_CD = 'REGION' ORDER BY SORT_ORDER, CODE"
+        query = "SELECT CODE, CODE_NAME FROM tb_common_code WHERE GROUP_CD = 'REGION' AND CODE NOT LIKE 'G_%' ORDER BY SORT_ORDER, CODE"
         return self.get_query_data(query)
