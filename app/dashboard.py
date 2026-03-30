@@ -18,6 +18,44 @@ def page_dashboard():
     </div>
     """)
 
+    _,col1 = st.columns([9,1])
+    with col1:
+        st.markdown("2026년 2월 기준")
+
+    c1, c2 = st.columns(2)
+    with c1:
+        with st.container(border=True):
+            st.markdown("차트 영역 1")
+            st.write("예 : 연료별")
+    with c2:
+        with st.container(border=True):
+            st.markdown("차트 영역 2")
+            st.write("예:차종별")
+
+    st.markdown("##")
+
+    t1, t2 = st.columns(2)
+    with t1:
+        with st.container(border=True):
+            st.markdown("차트 영역 1")
+            st.write("예 : 휘발유 가격 추이")
+    with t2:
+        with st.container(border=True):
+            st.markdown("차트 영역 2")
+            st.write("예:경유 가격 추이")
+
+    
+
+def page_analysis():
+    render_page_header("""
+    <div class="page-section">
+        <div class="page-section-title">📈 분석</div>
+        <div class="page-section-body">
+            유가 변동과 자동차 등록현황을 선택한 조건에 따라 간단한 분석을 할 수 있습니다.
+        </div>
+    </div>
+    """)
+
     selected_tab = st.segmented_control(None, DASHBOARD_TABS, default="개요")
 
     # 탭 전환 시 초기값 보장
@@ -159,55 +197,45 @@ def page_dashboard():
     st.markdown("##")
     st.markdown('<div class="double-divider"></div>', unsafe_allow_html=True)
 
-def page_analysis():
-    render_page_header("""
-    <div class="page-section">
-        <div class="page-section-title">📈 분석</div>
-        <div class="page-section-body">
-            유가 변동과 자동차 등록현황을 선택한 조건에 따라 간단한 분석을 할 수 있습니다.
-        </div>
-    </div>
-    """)
+    # with st.sidebar:
+    #     st.header("🔎 분석 조건")
+    #     selected_fuel   = st.multiselect("연료 선택", FUEL_OPTIONS)
+    #     selected_type   = st.multiselect("차종 선택", TYPE_OPTIONS)
+    #     selected_usage  = st.multiselect("용도 선택", USAGE_OPTIONS)
+    #     selected_region = st.multiselect("지역 선택", REGION_OPTIONS)
 
-    with st.sidebar:
-        st.header("🔎 분석 조건")
-        selected_fuel   = st.multiselect("연료 선택", FUEL_OPTIONS)
-        selected_type   = st.multiselect("차종 선택", TYPE_OPTIONS)
-        selected_usage  = st.multiselect("용도 선택", USAGE_OPTIONS)
-        selected_region = st.multiselect("지역 선택", REGION_OPTIONS)
+    # if not any([selected_fuel, selected_type, selected_usage, selected_region]):
+    #     st.info("왼쪽 사이드바에서 조건을 선택하면 관련 데이터가 표시됩니다.")
+    #     return
 
-    if not any([selected_fuel, selected_type, selected_usage, selected_region]):
-        st.info("왼쪽 사이드바에서 조건을 선택하면 관련 데이터가 표시됩니다.")
-        return
+    # def fmt(lst): return ", ".join(lst) if lst else "전체"
 
-    def fmt(lst): return ", ".join(lst) if lst else "전체"
+    # custom_success(
+    #     f"연료({fmt(selected_fuel)}) / 차종({fmt(selected_type)}) / "
+    #     f"용도({fmt(selected_usage)}) / 지역({fmt(selected_region)})"
+    # )
 
-    custom_success(
-        f"연료({fmt(selected_fuel)}) / 차종({fmt(selected_type)}) / "
-        f"용도({fmt(selected_usage)}) / 지역({fmt(selected_region)})"
-    )
+    # col1, col2, col3, col4 = st.columns(4)
+    # col1.metric("총 등록 대수", "예시값")
+    # col2.metric("선택 연료 수", len(selected_fuel))
+    # col3.metric("선택 차종 수", len(selected_type))
+    # col4.metric("선택 지역 수", len(selected_region))
 
-    col1, col2, col3, col4 = st.columns(4)
-    col1.metric("총 등록 대수", "예시값")
-    col2.metric("선택 연료 수", len(selected_fuel))
-    col3.metric("선택 차종 수", len(selected_type))
-    col4.metric("선택 지역 수", len(selected_region))
+    # st.markdown("###")
+    # for (title1, title2), (c1, c2) in zip(
+    #     [("연료별 분포", "차종별 분포"), ("지역별 분포", "용도별 분포")],
+    #     [st.columns(2), st.columns(2)],
+    # ):
+    #     with c1:
+    #         st.subheader(title1)
+    #         with st.container(border=True): st.write(f"{title1} 차트가 들어갑니다.")
+    #     with c2:
+    #         st.subheader(title2)
+    #         with st.container(border=True): st.write(f"{title2} 차트가 들어갑니다.")
 
-    st.markdown("###")
-    for (title1, title2), (c1, c2) in zip(
-        [("연료별 분포", "차종별 분포"), ("지역별 분포", "용도별 분포")],
-        [st.columns(2), st.columns(2)],
-    ):
-        with c1:
-            st.subheader(title1)
-            with st.container(border=True): st.write(f"{title1} 차트가 들어갑니다.")
-        with c2:
-            st.subheader(title2)
-            with st.container(border=True): st.write(f"{title2} 차트가 들어갑니다.")
-
-    st.subheader("상세 데이터")
-    with st.container(border=True):
-        st.write("필터링된 데이터 테이블이 들어갑니다.")
+    # st.subheader("상세 데이터")
+    # with st.container(border=True):
+    #     st.write("필터링된 데이터 테이블이 들어갑니다.")
     
     st.markdown("###")
     st.markdown('<div class="double-divider"></div>', unsafe_allow_html=True)
