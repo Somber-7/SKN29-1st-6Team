@@ -10,18 +10,18 @@ FAQ_DATA = [
     {"company": "테슬라",     "category": "서비스","question": "서비스 예약은 어디서 진행하나요?",     "answer": "Tesla 앱에서 서비스 항목을 선택하고 예약을 진행할 수 있습니다."},
 ]
 
-FAQ_TABS = ["기아", "현대", "제네시스", "브랜드"]
+FAQ_TABS = ["기아", "제네시스", "현대", "KGM"]
 
 # 탭 → company 필터 매핑 (None = 전체)
 _TAB_COMPANY = {
     "기아":    "기아",
-    "현대":    "현대자동차",
-    "제네시스": "제네시스",
-    "브랜드":  None,
+    "제네시스":    "제네시스",
+    "현대": "현대",
+    "KGM": "KGM" ,
 }
 
 _TAB_ICON = {
-    "기아": "⭐", "현대": "💰", "제네시스": "⛽", "브랜드": "🚘"
+    "기아": "⭐", "제네시스": "💰", "현대": "⛽", "KGM": "🚘"
 }
 
 def _render_faq_body(company_filter: str | None, tab_key: str):
@@ -49,9 +49,9 @@ def _render_faq_body(company_filter: str | None, tab_key: str):
              or keyword.lower() in f["answer"].lower())
     ]
 
-    col1, col2 = st.columns(2)
-    col1.metric("선택 카테고리", selected_category)
-    col2.metric("검색 결과 수",  len(filtered))
+    _, col2 = st.columns([9,1])
+    #col1.metric("선택 카테고리", selected_category)
+    col2.metric("검색 건수",  len(filtered))
 
     st.markdown("###")
     st.markdown("""
