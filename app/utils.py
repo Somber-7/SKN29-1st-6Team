@@ -159,5 +159,10 @@ def inject_global_css():
         height: 4px;
         margin: 12px 0 18px 0;
     }
+
+    .svg-container {
+        border-radius: 18px;
+    }
+
     </style>
     """, unsafe_allow_html=True)

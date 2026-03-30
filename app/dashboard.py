@@ -14,7 +14,7 @@ from app.db_connect import (
     get_national_average_fuel_price_trend
 )
 
-DASHBOARD_TABS = ["개요", "유가 추이", "연료별 현황", "차종·용도 현황", "지역별 현황"]
+DASHBOARD_TABS = ["개요", "유가 추이", "연료별 현황", "차종 현황", "용도 현황", "지역별 현황"]
 
 def load_dynamic_options():
     """
@@ -94,6 +94,7 @@ def page_dashboard():
                 # Plotly 파이 차트 생성
                 fig_fuel = px.pie(fuel_data, values='등록대수', names='연료', hole=0.3)
                 fig_fuel.update_traces(textposition='inside', textinfo='percent+label')
+                fig_fuel.update_layout(paper_bgcolor='#f8fbfe', plot_bgcolor='#f8fbfe')
                 st.plotly_chart(fig_fuel, use_container_width=True)
             else:
                 st.info("연료별 등록 현황 데이터가 없습니다.")
@@ -108,6 +109,7 @@ def page_dashboard():
                 # Plotly 파이 차트 생성
                 fig_type = px.pie(type_data, values='등록대수', names='차종', hole=0.3)
                 fig_type.update_traces(textposition='inside', textinfo='percent+label')
+                fig_type.update_layout(paper_bgcolor='#f8fbfe', plot_bgcolor='#f8fbfe')
                 st.plotly_chart(fig_type, use_container_width=True)
             else:
                 st.info("차종별 등록 현황 데이터가 없습니다.")
@@ -127,7 +129,7 @@ def page_dashboard():
                 st.markdown("**전국 휘발유 가격 추이**")
                 if not gasoline_data.empty:
                     fig_gas = px.line(gasoline_data, x='DATE', y='AVG_PRICE')
-                    fig_gas.update_layout(xaxis_title="기간", yaxis_title="평균 가격 (원/L)")
+                    fig_gas.update_layout(xaxis_title="기간", yaxis_title="평균 가격 (원/L)", paper_bgcolor='#f8fbfe', plot_bgcolor='#f8fbfe')
                     st.plotly_chart(fig_gas, use_container_width=True)
                 else:
                     st.info("휘발유 가격 데이터가 없습니다.")
@@ -136,7 +138,7 @@ def page_dashboard():
                 st.markdown("**전국 경유 가격 추이**")
                 if not diesel_data.empty:
                     fig_diesel = px.line(diesel_data, x='DATE', y='AVG_PRICE', color_discrete_sequence=['orange'])
-                    fig_diesel.update_layout(xaxis_title="기간", yaxis_title="평균 가격 (원/L)")
+                    fig_diesel.update_layout(xaxis_title="기간", yaxis_title="평균 가격 (원/L)", paper_bgcolor='#f8fbfe', plot_bgcolor='#f8fbfe')
                     st.plotly_chart(fig_diesel, use_container_width=True)
                 else:
                     st.info("경유 가격 데이터가 없습니다.")
@@ -179,8 +181,9 @@ def page_analysis():
             selected_regions = st.multiselect("지역 선택", REGION_OPTIONS, placeholder="지역을 선택하세요")
         elif selected_tab == "연료별 현황":
             selected_fuels  = st.multiselect("연료 선택", FUEL_OPTIONS,  placeholder="연료를 선택하세요")
-        elif selected_tab == "차종·용도 현황":
+        elif selected_tab == "차종 현황":
             selected_types  = st.multiselect("차종 선택", TYPE_OPTIONS,  placeholder="차종을 선택하세요")
+        elif selected_tab == "용도 현황":
             selected_usages = st.multiselect("용도 선택", USAGE_OPTIONS, placeholder="용도를 선택하세요")
         elif selected_tab == "지역별 현황":
             selected_regions = st.multiselect("지역 선택", REGION_OPTIONS, placeholder="지역을 선택하세요")
@@ -244,6 +247,7 @@ def page_analysis():
                                           markers=True,
                                           color_discrete_sequence=px.colors.qualitative.Vivid, 
                                           labels={"DATE": "시간", "AVG_PRICE": "평균 가격(원/리터)", "REGION_NM": "지역"})
+                        fig_gas.update_layout(paper_bgcolor='#f8fbfe', plot_bgcolor='#f8fbfe')
                         st.plotly_chart(fig_gas, use_container_width=True)
                     else:
                         st.warning("선택한 조건에 해당하는 휘발유 데이터가 없습니다.")
@@ -255,6 +259,7 @@ def page_analysis():
                                              markers=True,
                                              color_discrete_sequence=px.colors.qualitative.Vivid,
                                              labels={"DATE": "시간", "AVG_PRICE": "평균 가격(원/리터)", "REGION_NM": "지역"})
+                        fig_diesel.update_layout(paper_bgcolor='#f8fbfe', plot_bgcolor='#f8fbfe')
                         st.plotly_chart(fig_diesel, use_container_width=True)
                     else:
                         st.warning("선택한 조건에 해당하는 경유 데이터가 없습니다.")
@@ -315,7 +320,9 @@ def page_analysis():
                 title='연료별 등록 대수 증감폭과 유가 추이 비교',
                 yaxis=dict(title='등록 대수 증감폭 (대)'), # Y축 이름 변경
                 yaxis2=dict(title='평균 유가 (원/L)', overlaying='y', side='right'),
-                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+                paper_bgcolor='#f8fbfe',
+                plot_bgcolor='#f8fbfe'
             )
             st.plotly_chart(fig, use_container_width=True)
 
@@ -338,12 +345,12 @@ def page_analysis():
                                  color_continuous_scale="RdBu_r",
                                  zmin=-1, zmax=1)
             
-            fig_corr.update_layout(title='변수 간 피어슨 상관계수 (-1 ~ 1)')
+            fig_corr.update_layout(title='변수 간 피어슨 상관계수 (-1 ~ 1)', paper_bgcolor='#f8fbfe', plot_bgcolor='#f8fbfe')
             st.plotly_chart(fig_corr, use_container_width=True)
 
 
             # --- 교차 상관분석 (시차 적용) ---
-            st.markdown("### ⏳ 시차 적용 교차 상관분석 (Lag 0~6개월)")
+            st.markdown("### 시차 적용 교차 상관분석 (Lag 0~6개월)")
             
             lag_results = []
             
@@ -384,41 +391,355 @@ def page_analysis():
             # 수집된 결과를 데이터프레임으로 변환
             df_lag_corr = pd.DataFrame(lag_results)
 
-            # 시각화를 위해 휘발유 가격 기준 데이터만 필터링 (필요시 경유로 변경 가능)
+# 시각화를 위해 휘발유/경유 데이터 분리
             df_lag_gas = df_lag_corr[df_lag_corr['기준'] == '휘발유 가격']
+            df_lag_diesel = df_lag_corr[df_lag_corr['기준'] == '경유 가격']
             
-            # 시차에 따른 상관계수 변화 추이를 선 그래프로 시각화
-            fig_lag = px.line(df_lag_gas, x='시차', y='상관계수', color='차종', markers=True,
-                              title='휘발유 가격 변동이 N개월 뒤 차종별 등록 증감에 미치는 영향',
-                              labels={'시차': '유가 변동 이후 경과 시간', '상관계수': '피어슨 상관계수'})
+            # 그래프를 나란히 배치하기 위해 컬럼 2개 생성
+            lag_col1, lag_col2 = st.columns(2)
             
-            # --- 수정된 부분: Y축 범위를 -0.5 ~ 0.5로 축소 ---
-            fig_lag.update_yaxes(range=[-0.5, 0.5], zeroline=True, zerolinewidth=2, zerolinecolor='black')
-            
-            # 상관계수 범위 고정 (-1 ~ 1) 및 Y축 0 기준선 추가
-            fig_lag.update_yaxes(range=[-1, 1], zeroline=True, zerolinewidth=2, zerolinecolor='black')
-            st.plotly_chart(fig_lag, use_container_width=True)
+            with lag_col1:
+                with st.container(border=True):
+                    # 1. 휘발유 상관계수 그래프
+                    fig_lag_gas = px.line(df_lag_gas, x='시차', y='상관계수', color='차종', markers=True,
+                                          title='휘발유 가격 변동의 영향',
+                                          labels={'시차': '경과 시간', '상관계수': '상관계수'})
+                    
+                    fig_lag_gas.update_layout(paper_bgcolor='#f8fbfe', plot_bgcolor='#f8fbfe')
+                    # 중복된 코드 제거하고 범위 -0.5 ~ 0.5 로 완벽 고정
+                    fig_lag_gas.update_yaxes(range=[-0.5, 0.5], zeroline=True, zerolinewidth=2, zerolinecolor='black')
+                    
+                    st.plotly_chart(fig_lag_gas, use_container_width=True)
 
-    # ── 차종·용도 현황 ──
-    elif selected_tab == "차종·용도 현황":
-        st.subheader("🚘 차종·용도 현황")
-        if not selected_types and not selected_usages:
-            st.info("왼쪽 사이드바에서 차종 또는 용도를 선택하면 관련 차트와 통계가 표시됩니다.")
+            with lag_col2:
+                with st.container(border=True):
+                    # 2. 경유 상관계수 그래프
+                    fig_lag_diesel = px.line(df_lag_diesel, x='시차', y='상관계수', color='차종', markers=True,
+                                             title='경유 가격 변동의 영향',
+                                             labels={'시차': '경과 시간', '상관계수': '상관계수'})
+                    
+                    fig_lag_diesel.update_layout(paper_bgcolor='#f8fbfe', plot_bgcolor='#f8fbfe')
+                    # 동일하게 범위 -0.5 ~ 0.5 로 완벽 고정
+                    fig_lag_diesel.update_yaxes(range=[-0.5, 0.5], zeroline=True, zerolinewidth=2, zerolinecolor='black')
+                    
+                    st.plotly_chart(fig_lag_diesel, use_container_width=True)
+
+    # ── 차종 현황 ──
+    elif selected_tab == "차종 현황":
+        st.subheader("🚘 차종 현황")
+        if not selected_types:
+            st.info("왼쪽 사이드바에서 차종을 선택하면 관련 차트와 통계가 표시됩니다.")
         else:
-            custom_success(
-                f"선택 조건: 차종({', '.join(selected_types) or '전체'}) / "
-                f"용도({', '.join(selected_usages) or '전체'})"
+            with DB_connect(DB_CONFIG) as db:
+                df_trend = db.get_trend_analysis_data()
+
+            if df_trend.empty:
+                st.error("데이터를 불러오는 데 실패했습니다.")
+                return
+
+            # 날짜 형식 변환 및 필터링
+            df_trend['DATE'] = pd.to_datetime(df_trend['STAT_YM'], format='%Y%m')
+            df_filtered = df_trend[df_trend['TYPE_NM'].isin(selected_types)]
+
+            if df_filtered.empty:
+                st.warning("선택하신 조건에 해당하는 데이터가 없습니다.")
+                return
+
+            custom_success(f"선택 차종: {', '.join(selected_types)}")
+
+            # 데이터 집계
+            df_reg_agg = df_filtered.groupby(['DATE', 'TYPE_NM'])['REG_CNT'].sum().reset_index()
+            
+            # 2. 차종 및 날짜순 정렬 후 증감폭(diff) 계산 추가
+            df_reg_agg = df_reg_agg.sort_values(by=['TYPE_NM', 'DATE'])
+            df_reg_agg['REG_CNT_DIFF'] = df_reg_agg.groupby('TYPE_NM')['REG_CNT'].diff()
+            
+            # 첫 달은 이전 달 데이터가 없으므로 NaN이 됩니다. 이를 0으로 채웁니다.
+            df_reg_agg['REG_CNT_DIFF'] = df_reg_agg['REG_CNT_DIFF'].fillna(0)
+
+            df_price_agg = df_trend.groupby('DATE').agg(
+                GASOLINE_PRICE=('GASOLINE_PRICE', 'mean'),
+                DIESEL_PRICE=('DIESEL_PRICE', 'mean')
+            ).reset_index()
+
+            # --- 이중 축 차트 생성 ---
+            fig = go.Figure()
+
+            # 등록 대수 증감폭 라인 추가 (좌측 Y축) - y값을 REG_CNT_DIFF로 변경
+            for type in selected_types:
+                df_type = df_reg_agg[df_reg_agg['TYPE_NM'] == type]
+                fig.add_trace(go.Scatter(x=df_type['DATE'], y=df_type['REG_CNT_DIFF'], mode='lines+markers', name=f'{type} 증감폭'))
+
+            # 유가 라인 추가 (우측 Y축)
+            fig.add_trace(go.Scatter(x=df_price_agg['DATE'], y=df_price_agg['GASOLINE_PRICE'], mode='lines', name='휘발유 가격', line=dict(dash='dot', color='tomato'), yaxis='y2'))
+            fig.add_trace(go.Scatter(x=df_price_agg['DATE'], y=df_price_agg['DIESEL_PRICE'], mode='lines', name='경유 가격', line=dict(dash='dot', color='dodgerblue'), yaxis='y2'))
+
+            fig.update_layout(
+                title='차종별 등록 대수 증감폭과 유가 추이 비교',
+                yaxis=dict(title='등록 대수 증감폭 (대)'), # Y축 이름 변경
+                yaxis2=dict(title='평균 유가 (원/L)', overlaying='y', side='right'),
+                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+                paper_bgcolor='#f8fbfe',
+                plot_bgcolor='#f8fbfe'
             )
-            col1, col2, col3 = st.columns(3)
-            col1.metric("선택 차종 수", len(selected_types) or 4)
-            col2.metric("선택 용도 수", len(selected_usages) or 2)
-            col3.metric("총 등록 대수", "예시값")
-            st.markdown("###")
-            c1, c2 = st.columns(2)
-            with c1:
-                with st.container(border=True): st.write("차종별 등록 현황 차트 영역")
-            with c2:
-                with st.container(border=True): st.write("용도별 등록 현황 차트 영역")
+            st.plotly_chart(fig, use_container_width=True)
+
+            # --- 상관분석 및 히트맵 생성 ---
+            st.markdown("### 📊 유가 및 차종별 등록 증감폭 상관관계")
+            
+            # 1. 차량 데이터를 날짜 기준, 차종별 컬럼으로 넓게 펴기 (Pivot)
+            df_reg_pivot = df_reg_agg.pivot(index='DATE', columns='TYPE_NM', values='REG_CNT_DIFF').reset_index()
+            
+            # 2. 유가 데이터와 차량 데이터 병합
+            df_corr_base = pd.merge(df_price_agg, df_reg_pivot, on='DATE', how='inner')
+            
+            # 3. 날짜 컬럼 제외하고 상관계수 행렬 계산
+            corr_matrix = df_corr_base.drop(columns=['DATE']).corr()
+            
+            # 4. Plotly Heatmap 그리기
+            fig_corr = px.imshow(corr_matrix, 
+                                 text_auto=".2f",
+                                 aspect="auto",
+                                 color_continuous_scale="RdBu_r",
+                                 zmin=-1, zmax=1)
+            
+            fig_corr.update_layout(title='변수 간 피어슨 상관계수 (-1 ~ 1)', paper_bgcolor='#f8fbfe', plot_bgcolor='#f8fbfe')
+            st.plotly_chart(fig_corr, use_container_width=True)
+
+
+            # --- 교차 상관분석 (시차 적용) ---
+            st.markdown("### 시차 적용 교차 상관분석 (Lag 0~6개월)")
+            
+            lag_results = []
+            
+            # 날짜순 정렬 보장
+            df_corr_sorted = df_corr_base.sort_values('DATE').copy()
+            
+            # 0개월부터 6개월까지 시차(Lag) 반복
+            for lag in range(7):
+                df_temp = df_corr_sorted.copy()
+                
+                # 핵심 로직: 유가 데이터를 lag 개월만큼 뒤로 미루기
+                df_temp['GASOLINE_PRICE'] = df_temp['GASOLINE_PRICE'].shift(lag)
+                df_temp['DIESEL_PRICE'] = df_temp['DIESEL_PRICE'].shift(lag)
+                
+                # 데이터를 미루면서 생긴 빈칸(결측치) 제거
+                df_temp = df_temp.dropna()
+                
+                # 빈 데이터프레임이 아닐 경우에만 상관계수 계산
+                if not df_temp.empty:
+                    corr_m = df_temp.drop(columns=['DATE']).corr()
+                    
+                    # 선택된 각 차종별로 휘발유/경유 가격과의 상관계수 추출하여 리스트에 저장
+                    for type in selected_types:
+                        if type in corr_m.columns:
+                            lag_results.append({
+                                '시차': f'{lag}개월 뒤',
+                                '차종': type,
+                                '기준': '휘발유 가격',
+                                '상관계수': corr_m.loc['GASOLINE_PRICE', type]
+                            })
+                            lag_results.append({
+                                '시차': f'{lag}개월 뒤',
+                                '차종': type,
+                                '기준': '경유 가격',
+                                '상관계수': corr_m.loc['DIESEL_PRICE', type]
+                            })
+
+            # 수집된 결과를 데이터프레임으로 변환
+            df_lag_corr = pd.DataFrame(lag_results)
+
+            # 시각화를 위해 휘발유/경유 데이터 분리
+            df_lag_gas = df_lag_corr[df_lag_corr['기준'] == '휘발유 가격']
+            df_lag_diesel = df_lag_corr[df_lag_corr['기준'] == '경유 가격']
+            
+            # 그래프를 나란히 배치하기 위해 컬럼 2개 생성
+            lag_col1, lag_col2 = st.columns(2)
+            
+            with lag_col1:
+                with st.container(border=True):
+                    # 1. 휘발유 상관계수 그래프
+                    fig_lag_gas = px.line(df_lag_gas, x='시차', y='상관계수', color='차종', markers=True,
+                                          title='휘발유 가격 변동의 영향',
+                                          labels={'시차': '경과 시간', '상관계수': '상관계수'})
+                    
+                    fig_lag_gas.update_layout(paper_bgcolor='#f8fbfe', plot_bgcolor='#f8fbfe')
+                    # 중복된 코드 제거하고 범위 -0.5 ~ 0.5 로 완벽 고정
+                    fig_lag_gas.update_yaxes(range=[-0.5, 0.5], zeroline=True, zerolinewidth=2, zerolinecolor='black')
+                    
+                    st.plotly_chart(fig_lag_gas, use_container_width=True)
+
+            with lag_col2:
+                with st.container(border=True):
+                    # 2. 경유 상관계수 그래프
+                    fig_lag_diesel = px.line(df_lag_diesel, x='시차', y='상관계수', color='차종', markers=True,
+                                             title='경유 가격 변동의 영향',
+                                             labels={'시차': '경과 시간', '상관계수': '상관계수'})
+                    
+                    fig_lag_diesel.update_layout(paper_bgcolor='#f8fbfe', plot_bgcolor='#f8fbfe')
+                    # 동일하게 범위 -0.5 ~ 0.5 로 완벽 고정
+                    fig_lag_diesel.update_yaxes(range=[-0.5, 0.5], zeroline=True, zerolinewidth=2, zerolinecolor='black')
+                    
+                    st.plotly_chart(fig_lag_diesel, use_container_width=True)
+
+    # ── 용도 현황 ──
+    elif selected_tab == "용도 현황":
+        st.subheader("📋 용도 현황")
+        if not selected_usages:
+            st.info("왼쪽 사이드바에서 용도를 선택하면 관련 차트와 통계가 표시됩니다.")
+        else:
+            with DB_connect(DB_CONFIG) as db:
+                df_trend = db.get_trend_analysis_data()
+
+            if df_trend.empty:
+                st.error("데이터를 불러오는 데 실패했습니다.")
+                return
+
+            # 날짜 형식 변환 및 필터링
+            df_trend['DATE'] = pd.to_datetime(df_trend['STAT_YM'], format='%Y%m')
+            df_filtered = df_trend[df_trend['USAGE_NM'].isin(selected_usages)]
+
+            if df_filtered.empty:
+                st.warning("선택하신 조건에 해당하는 데이터가 없습니다.")
+                return
+
+            custom_success(f"선택 용도: {', '.join(selected_usages)}")
+
+            # 데이터 집계
+            df_reg_agg = df_filtered.groupby(['DATE', 'USAGE_NM'])['REG_CNT'].sum().reset_index()
+            
+            # 2. 용도 및 날짜순 정렬 후 증감폭(diff) 계산 추가
+            df_reg_agg = df_reg_agg.sort_values(by=['USAGE_NM', 'DATE'])
+            df_reg_agg['REG_CNT_DIFF'] = df_reg_agg.groupby('USAGE_NM')['REG_CNT'].diff()
+            
+            # 첫 달은 이전 달 데이터가 없으므로 NaN이 됩니다. 이를 0으로 채웁니다.
+            df_reg_agg['REG_CNT_DIFF'] = df_reg_agg['REG_CNT_DIFF'].fillna(0)
+
+            df_price_agg = df_trend.groupby('DATE').agg(
+                GASOLINE_PRICE=('GASOLINE_PRICE', 'mean'),
+                DIESEL_PRICE=('DIESEL_PRICE', 'mean')
+            ).reset_index()
+
+            # --- 이중 축 차트 생성 ---
+            fig = go.Figure()
+
+            # 등록 대수 증감폭 라인 추가 (좌측 Y축) - y값을 REG_CNT_DIFF로 변경
+            for usage in selected_usages:
+                df_usage = df_reg_agg[df_reg_agg['USAGE_NM'] == usage]
+                fig.add_trace(go.Scatter(x=df_usage['DATE'], y=df_usage['REG_CNT_DIFF'], mode='lines+markers', name=f'{usage} 증감폭'))
+
+            # 유가 라인 추가 (우측 Y축)
+            fig.add_trace(go.Scatter(x=df_price_agg['DATE'], y=df_price_agg['GASOLINE_PRICE'], mode='lines', name='휘발유 가격', line=dict(dash='dot', color='tomato'), yaxis='y2'))
+            fig.add_trace(go.Scatter(x=df_price_agg['DATE'], y=df_price_agg['DIESEL_PRICE'], mode='lines', name='경유 가격', line=dict(dash='dot', color='dodgerblue'), yaxis='y2'))
+
+            fig.update_layout(
+                title='용도별 등록 대수 증감폭과 유가 추이 비교',
+                yaxis=dict(title='등록 대수 증감폭 (대)'), # Y축 이름 변경
+                yaxis2=dict(title='평균 유가 (원/L)', overlaying='y', side='right'),
+                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+                paper_bgcolor='#f8fbfe',
+                plot_bgcolor='#f8fbfe'
+            )
+            st.plotly_chart(fig, use_container_width=True)
+
+            # --- 상관분석 및 히트맵 생성 ---
+            st.markdown("### 📊 유가 및 용도별 등록 증감폭 상관관계")
+            
+            # 1. 차량 데이터를 날짜 기준, 용도별 컬럼으로 넓게 펴기 (Pivot)
+            df_reg_pivot = df_reg_agg.pivot(index='DATE', columns='USAGE_NM', values='REG_CNT_DIFF').reset_index()
+            
+            # 2. 유가 데이터와 차량 데이터 병합
+            df_corr_base = pd.merge(df_price_agg, df_reg_pivot, on='DATE', how='inner')
+            
+            # 3. 날짜 컬럼 제외하고 상관계수 행렬 계산
+            corr_matrix = df_corr_base.drop(columns=['DATE']).corr()
+            
+            # 4. Plotly Heatmap 그리기
+            fig_corr = px.imshow(corr_matrix, 
+                                 text_auto=".2f",
+                                 aspect="auto",
+                                 color_continuous_scale="RdBu_r",
+                                 zmin=-1, zmax=1)
+            
+            fig_corr.update_layout(title='변수 간 피어슨 상관계수 (-1 ~ 1)', paper_bgcolor='#f8fbfe', plot_bgcolor='#f8fbfe')
+            st.plotly_chart(fig_corr, use_container_width=True)
+
+
+            # --- 교차 상관분석 (시차 적용) ---
+            st.markdown("### 시차 적용 교차 상관분석 (Lag 0~6개월)")
+            
+            lag_results = []
+            
+            # 날짜순 정렬 보장
+            df_corr_sorted = df_corr_base.sort_values('DATE').copy()
+            
+            # 0개월부터 6개월까지 시차(Lag) 반복
+            for lag in range(7):
+                df_temp = df_corr_sorted.copy()
+                
+                # 핵심 로직: 유가 데이터를 lag 개월만큼 뒤로 미루기
+                df_temp['GASOLINE_PRICE'] = df_temp['GASOLINE_PRICE'].shift(lag)
+                df_temp['DIESEL_PRICE'] = df_temp['DIESEL_PRICE'].shift(lag)
+                
+                # 데이터를 미루면서 생긴 빈칸(결측치) 제거
+                df_temp = df_temp.dropna()
+                
+                # 빈 데이터프레임이 아닐 경우에만 상관계수 계산
+                if not df_temp.empty:
+                    corr_m = df_temp.drop(columns=['DATE']).corr()
+                    
+                    # 선택된 각 용도별로 휘발유/경유 가격과의 상관계수 추출하여 리스트에 저장
+                    for usage in selected_usages:
+                        if usage in corr_m.columns:
+                            lag_results.append({
+                                '시차': f'{lag}개월 뒤',
+                                '용도': usage,
+                                '기준': '휘발유 가격',
+                                '상관계수': corr_m.loc['GASOLINE_PRICE', usage]
+                            })
+                            lag_results.append({
+                                '시차': f'{lag}개월 뒤',
+                                '용도': usage,
+                                '기준': '경유 가격',
+                                '상관계수': corr_m.loc['DIESEL_PRICE', usage]
+                            })
+
+            # 수집된 결과를 데이터프레임으로 변환
+            df_lag_corr = pd.DataFrame(lag_results)
+
+            # 시각화를 위해 휘발유/경유 데이터 분리
+            df_lag_gas = df_lag_corr[df_lag_corr['기준'] == '휘발유 가격']
+            df_lag_diesel = df_lag_corr[df_lag_corr['기준'] == '경유 가격']
+            
+            # 그래프를 나란히 배치하기 위해 컬럼 2개 생성
+            lag_col1, lag_col2 = st.columns(2)
+            
+            with lag_col1:
+                with st.container(border=True):
+                    # 1. 휘발유 상관계수 그래프
+                    fig_lag_gas = px.line(df_lag_gas, x='시차', y='상관계수', color='용도', markers=True,
+                                          title='휘발유 가격 변동의 영향',
+                                          labels={'시차': '경과 시간', '상관계수': '상관계수'})
+                    
+                    fig_lag_gas.update_layout(paper_bgcolor='#f8fbfe', plot_bgcolor='#f8fbfe')
+                    # 중복된 코드 제거하고 범위 -0.5 ~ 0.5 로 완벽 고정
+                    fig_lag_gas.update_yaxes(range=[-0.5, 0.5], zeroline=True, zerolinewidth=2, zerolinecolor='black')
+                    
+                    st.plotly_chart(fig_lag_gas, use_container_width=True)
+
+            with lag_col2:
+                with st.container(border=True):
+                    # 2. 경유 상관계수 그래프
+                    fig_lag_diesel = px.line(df_lag_diesel, x='시차', y='상관계수', color='용도', markers=True,
+                                             title='경유 가격 변동의 영향',
+                                             labels={'시차': '경과 시간', '상관계수': '상관계수'})
+                    
+                    fig_lag_diesel.update_layout(paper_bgcolor='#f8fbfe', plot_bgcolor='#f8fbfe')
+                    # 동일하게 범위 -0.5 ~ 0.5 로 완벽 고정
+                    fig_lag_diesel.update_yaxes(range=[-0.5, 0.5], zeroline=True, zerolinewidth=2, zerolinecolor='black')
+                    
+                    st.plotly_chart(fig_lag_diesel, use_container_width=True)
+
 
     # ── 지역별 현황 ──
     elif selected_tab == "지역별 현황":
@@ -439,43 +760,3 @@ def page_analysis():
                 with st.container(border=True): st.write("지역별 비율 차트 영역")
     st.markdown("##")
     st.markdown('<div class="double-divider"></div>', unsafe_allow_html=True)
-
-    # with st.sidebar:
-    #     st.header("🔎 분석 조건")
-    #     selected_fuel   = st.multiselect("연료 선택", FUEL_OPTIONS)
-    #     selected_type   = st.multiselect("차종 선택", TYPE_OPTIONS)
-    #     selected_usage  = st.multiselect("용도 선택", USAGE_OPTIONS)
-    #     selected_region = st.multiselect("지역 선택", REGION_OPTIONS)
-
-    # if not any([selected_fuel, selected_type, selected_usage, selected_region]):
-    #     st.info("왼쪽 사이드바에서 조건을 선택하면 관련 데이터가 표시됩니다.")
-    #     return
-
-    # def fmt(lst): return ", ".join(lst) if lst else "전체"
-
-    # custom_success(
-    #     f"연료({fmt(selected_fuel)}) / 차종({fmt(selected_type)}) / "
-    #     f"용도({fmt(selected_usage)}) / 지역({fmt(selected_region)})"
-    # )
-
-    # col1, col2, col3, col4 = st.columns(4)
-    # col1.metric("총 등록 대수", "예시값")
-    # col2.metric("선택 연료 수", len(selected_fuel))
-    # col3.metric("선택 차종 수", len(selected_type))
-    # col4.metric("선택 지역 수", len(selected_region))
-
-    # st.markdown("###")
-    # for (title1, title2), (c1, c2) in zip(
-    #     [("연료별 분포", "차종별 분포"), ("지역별 분포", "용도별 분포")],
-    #     [st.columns(2), st.columns(2)],
-    # ):
-    #     with c1:
-    #         st.subheader(title1)
-    #         with st.container(border=True): st.write(f"{title1} 차트가 들어갑니다.")
-    #     with c2:
-    #         st.subheader(title2)
-    #         with st.container(border=True): st.write(f"{title2} 차트가 들어갑니다.")
-
-    # st.subheader("상세 데이터")
-    # with st.container(border=True):
-    #     st.write("필터링된 데이터 테이블이 들어갑니다.")
