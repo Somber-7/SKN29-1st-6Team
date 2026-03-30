@@ -1,6 +1,8 @@
 import streamlit as st
 import plotly.express as px
 import pandas as pd
+import plotly.graph_objects as go
+from datetime import datetime
 from app.utils import (
     render_page_header, custom_success,
     FUEL_OPTIONS, FUEL_PRICE_OPTIONS,
@@ -14,6 +16,55 @@ from app.db_connect import (
 
 DASHBOARD_TABS = ["개요", "유가 추이", "연료별 현황", "차종·용도 현황", "지역별 현황"]
 
+def load_dynamic_options():
+    """
+    데이터베이스에서 동적 옵션(연료, 차종 등)을 로드하고, 실패 시 기본값을 사용합니다.
+    """
+    default_options = {
+        "FUEL_OPTIONS": ["휘발유", "경유", "전기", "하이브리드(휘발유+전기)", "하이브리드(경유+전기)"],
+        "FUEL_PRICE_OPTIONS": ["휘발유", "경유"],
+        "TYPE_OPTIONS": ["승용", "승합", "화물", "특수"],
+        "USAGE_OPTIONS": ["비사업용", "사업용"],
+        "REGION_OPTIONS": ["서울", "부산", "대구", "인천", "광주", "대전", "울산", "세종", "경기", "강원", "충북", "충남", "전북", "전남", "경북", "경남", "제주"]
+    }
+
+    option_methods = {
+        "FUEL_OPTIONS": "get_fuel_options",
+        "FUEL_PRICE_OPTIONS": "get_fuel_price_options",
+        "TYPE_OPTIONS": "get_type_options",
+        "USAGE_OPTIONS": "get_usage_options",
+        "REGION_OPTIONS": "get_region_options"
+    }
+
+    loaded_options = default_options.copy()
+    with DB_connect(DB_CONFIG) as db:
+        print(DB_CONFIG)
+        try:
+            for key, method_name in option_methods.items():
+                if hasattr(db, method_name):
+                    df = getattr(db, method_name)()
+                    if not df.empty and 'CODE_NAME' in df.columns:
+                        db_options = df['CODE_NAME'].tolist()
+                        if db_options:
+                            loaded_options[key] = db_options
+                else:
+                    print(f"Warning: Method {method_name} not found in DB_connect. Using default for {key}.")
+        except Exception as e:
+            print(f"Database error during option loading: {e}. Using default values.")
+            # In case of any exception, return the default dictionary
+            return default_options
+        finally:
+            db.close()
+    return loaded_options
+
+
+# Load dynamic options once and use them throughout the app
+dynamic_options = load_dynamic_options()
+FUEL_OPTIONS = dynamic_options["FUEL_OPTIONS"]
+FUEL_PRICE_OPTIONS = dynamic_options["FUEL_PRICE_OPTIONS"]
+TYPE_OPTIONS = dynamic_options["TYPE_OPTIONS"]
+USAGE_OPTIONS = dynamic_options["USAGE_OPTIONS"]
+REGION_OPTIONS = dynamic_options["REGION_OPTIONS"]
 
 def page_dashboard():
     render_page_header("""
@@ -26,6 +77,7 @@ def page_dashboard():
     </div>
     """)
 
+
     _,col1 = st.columns([9,1])
     with col1:
         st.markdown("2026년 2월 기준")
@@ -34,7 +86,7 @@ def page_dashboard():
     c1, c2 = st.columns(2)
     with c1:
         with st.container(border=True):
-            st.markdown("**202602 연료별 등록 현황**")
+            st.markdown("**연료별 등록 현황**")
             # 함수 파라미터 제거됨
             fuel_data = get_fuel_registration_data(STAT_YM) 
             
@@ -48,7 +100,7 @@ def page_dashboard():
                 
     with c2:
         with st.container(border=True):
-            st.markdown("**202602 차종별 등록 현황**")
+            st.markdown("**차종별 등록 현황**")
             # 함수 파라미터 제거됨
             type_data = get_type_registration_data(STAT_YM) 
             
@@ -122,9 +174,9 @@ def page_analysis():
         st.header("📌 대시보드 필터")
 
         if selected_tab == "유가 추이":
-            selected_fuel_prices = st.multiselect("연료 선택", FUEL_PRICE_OPTIONS, placeholder="연료를 선택하세요")
+            year_range = st.slider("기간 선택", min_value=2021, max_value=2026, value=(2021, 2026))
             st.divider()
-            year_range = st.slider("기간 선택", min_value=2015, max_value=2024, value=(2020, 2024))
+            selected_regions = st.multiselect("지역 선택", REGION_OPTIONS, placeholder="지역을 선택하세요")
         elif selected_tab == "연료별 현황":
             selected_fuels  = st.multiselect("연료 선택", FUEL_OPTIONS,  placeholder="연료를 선택하세요")
         elif selected_tab == "차종·용도 현황":
@@ -162,46 +214,190 @@ def page_analysis():
     # ── 유가 추이 ──
     elif selected_tab == "유가 추이":
         st.subheader("💰 유가 추이")
-        if not selected_fuel_prices:
-            st.info("왼쪽 사이드바에서 연료를 선택하면 유가 추이 차트가 표시됩니다.")
+        if not selected_regions:
+            st.info("왼쪽 사이드바에서 지역을 선택하면 유가 추이 차트가 표시됩니다.")
         else:
-            custom_success(f"선택 연료: {', '.join(selected_fuel_prices)} / 기간: {year_range[0]} ~ {year_range[1]}")
-            col1, col2, col3 = st.columns(3)
-            col1.metric("선택 연료 수",  len(selected_fuel_prices))
-            col2.metric("조회 시작 연도", year_range[0])
-            col3.metric("조회 종료 연도", year_range[1])
-            st.markdown("###")
-            c1, c2 = st.columns(2)
-            with c1:
+            custom_success(f"선택 지역: {', '.join(selected_regions)} / 기간: {year_range[0]} ~ {year_range[1]}")
+            
+            # DB에서 유가 데이터 불러오기
+            with DB_connect(DB_CONFIG) as db:
+                print(DB_CONFIG)
+                df_price = db.get_fuel_price_trend()
+                
+            if not df_price.empty:
+                # 기간 및 지역 필터링
+                df_price['YEAR'] = df_price['STAT_YM'].str[:4].astype(int)
+                df_filtered = df_price[(df_price['YEAR'] >= year_range[0]) & (df_price['YEAR'] <= year_range[1])]
+                df_filtered = df_filtered[df_filtered['REGION_NM'].isin(selected_regions)]
+                
+                # X축을 위한 날짜 형식 변환
+                df_filtered['DATE'] = pd.to_datetime(df_filtered['STAT_YM'], format='%Y%m')
+                
+                # 휘발유, 경유 데이터 분리
+                df_gasoline = df_filtered[df_filtered['FUEL_NM'] == '휘발유']
+                df_diesel = df_filtered[df_filtered['FUEL_NM'] == '경유']
+                
+                st.markdown("### 휘발유 가격 추이")
                 with st.container(border=True):
-                    st.markdown("**연도별 유가 변동 추이 차트 영역**")
-                    st.write("예: 연도별 휘발유·경유·LPG 가격 라인차트")
-            with c2:
+                    if not df_gasoline.empty:
+                        fig_gas = px.line(df_gasoline, x="DATE", y="AVG_PRICE", color="REGION_NM",
+                                          markers=True,
+                                          color_discrete_sequence=px.colors.qualitative.Vivid, 
+                                          labels={"DATE": "시간", "AVG_PRICE": "평균 가격(원/리터)", "REGION_NM": "지역"})
+                        st.plotly_chart(fig_gas, use_container_width=True)
+                    else:
+                        st.warning("선택한 조건에 해당하는 휘발유 데이터가 없습니다.")
+                        
+                st.markdown("### 경유 가격 추이")
                 with st.container(border=True):
-                    st.markdown("**연료별 평균 가격 비교 차트 영역**")
-                    st.write("예: 연료 유형별 평균가 바차트")
-            st.markdown("###")
-            with st.container(border=True):
-                st.markdown("**유가 변동 상세 데이터 테이블 영역**")
-                st.write("예: 연도·연료별 가격 테이블")
-
+                    if not df_diesel.empty:
+                        fig_diesel = px.line(df_diesel, x="DATE", y="AVG_PRICE", color="REGION_NM",
+                                             markers=True,
+                                             color_discrete_sequence=px.colors.qualitative.Vivid,
+                                             labels={"DATE": "시간", "AVG_PRICE": "평균 가격(원/리터)", "REGION_NM": "지역"})
+                        st.plotly_chart(fig_diesel, use_container_width=True)
+                    else:
+                        st.warning("선택한 조건에 해당하는 경유 데이터가 없습니다.")
+            else:
+                st.error("데이터베이스에서 유가 데이터를 불러오지 못했습니다.")
+                
     # ── 연료별 현황 ──
     elif selected_tab == "연료별 현황":
         st.subheader("⛽ 연료별 현황")
         if not selected_fuels:
             st.info("왼쪽 사이드바에서 연료를 선택하면 관련 차트와 통계가 표시됩니다.")
         else:
+            with DB_connect(DB_CONFIG) as db:
+                df_trend = db.get_trend_analysis_data()
+
+            if df_trend.empty:
+                st.error("데이터를 불러오는 데 실패했습니다.")
+                return
+
+            # 날짜 형식 변환 및 필터링
+            df_trend['DATE'] = pd.to_datetime(df_trend['STAT_YM'], format='%Y%m')
+            df_filtered = df_trend[df_trend['FUEL_NM'].isin(selected_fuels)]
+
+            if df_filtered.empty:
+                st.warning("선택하신 조건에 해당하는 데이터가 없습니다.")
+                return
+
             custom_success(f"선택 연료: {', '.join(selected_fuels)}")
-            col1, col2, col3 = st.columns(3)
-            col1.metric("선택 연료 수",  len(selected_fuels))
-            col2.metric("총 등록 대수",  "예시값")
-            col3.metric("최다 비중 연료", "예시값")
-            st.markdown("###")
-            c1, c2 = st.columns(2)
-            with c1:
-                with st.container(border=True): st.write("연료별 등록 대수 차트 영역")
-            with c2:
-                with st.container(border=True): st.write("연료별 비율 차트 영역")
+
+            # 데이터 집계
+            df_reg_agg = df_filtered.groupby(['DATE', 'FUEL_NM'])['REG_CNT'].sum().reset_index()
+            
+            # 2. 연료 및 날짜순 정렬 후 증감폭(diff) 계산 추가
+            df_reg_agg = df_reg_agg.sort_values(by=['FUEL_NM', 'DATE'])
+            df_reg_agg['REG_CNT_DIFF'] = df_reg_agg.groupby('FUEL_NM')['REG_CNT'].diff()
+            
+            # 첫 달은 이전 달 데이터가 없으므로 NaN이 됩니다. 이를 0으로 채웁니다.
+            df_reg_agg['REG_CNT_DIFF'] = df_reg_agg['REG_CNT_DIFF'].fillna(0)
+
+            df_price_agg = df_trend.groupby('DATE').agg(
+                GASOLINE_PRICE=('GASOLINE_PRICE', 'mean'),
+                DIESEL_PRICE=('DIESEL_PRICE', 'mean')
+            ).reset_index()
+
+            # --- 이중 축 차트 생성 ---
+            fig = go.Figure()
+
+            # 등록 대수 증감폭 라인 추가 (좌측 Y축) - y값을 REG_CNT_DIFF로 변경
+            for fuel in selected_fuels:
+                df_fuel = df_reg_agg[df_reg_agg['FUEL_NM'] == fuel]
+                fig.add_trace(go.Scatter(x=df_fuel['DATE'], y=df_fuel['REG_CNT_DIFF'], mode='lines+markers', name=f'{fuel} 증감폭'))
+
+            # 유가 라인 추가 (우측 Y축)
+            fig.add_trace(go.Scatter(x=df_price_agg['DATE'], y=df_price_agg['GASOLINE_PRICE'], mode='lines', name='휘발유 가격', line=dict(dash='dot', color='tomato'), yaxis='y2'))
+            fig.add_trace(go.Scatter(x=df_price_agg['DATE'], y=df_price_agg['DIESEL_PRICE'], mode='lines', name='경유 가격', line=dict(dash='dot', color='dodgerblue'), yaxis='y2'))
+
+            fig.update_layout(
+                title='연료별 등록 대수 증감폭과 유가 추이 비교',
+                yaxis=dict(title='등록 대수 증감폭 (대)'), # Y축 이름 변경
+                yaxis2=dict(title='평균 유가 (원/L)', overlaying='y', side='right'),
+                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+            )
+            st.plotly_chart(fig, use_container_width=True)
+
+            # --- 상관분석 및 히트맵 생성 ---
+            st.markdown("### 📊 유가 및 연료별 등록 증감폭 상관관계")
+            
+            # 1. 차량 데이터를 날짜 기준, 연료별 컬럼으로 넓게 펴기 (Pivot)
+            df_reg_pivot = df_reg_agg.pivot(index='DATE', columns='FUEL_NM', values='REG_CNT_DIFF').reset_index()
+            
+            # 2. 유가 데이터와 차량 데이터 병합
+            df_corr_base = pd.merge(df_price_agg, df_reg_pivot, on='DATE', how='inner')
+            
+            # 3. 날짜 컬럼 제외하고 상관계수 행렬 계산
+            corr_matrix = df_corr_base.drop(columns=['DATE']).corr()
+            
+            # 4. Plotly Heatmap 그리기
+            fig_corr = px.imshow(corr_matrix, 
+                                 text_auto=".2f",
+                                 aspect="auto",
+                                 color_continuous_scale="RdBu_r",
+                                 zmin=-1, zmax=1)
+            
+            fig_corr.update_layout(title='변수 간 피어슨 상관계수 (-1 ~ 1)')
+            st.plotly_chart(fig_corr, use_container_width=True)
+
+
+            # --- 교차 상관분석 (시차 적용) ---
+            st.markdown("### ⏳ 시차 적용 교차 상관분석 (Lag 0~6개월)")
+            
+            lag_results = []
+            
+            # 날짜순 정렬 보장
+            df_corr_sorted = df_corr_base.sort_values('DATE').copy()
+            
+            # 0개월부터 3개월까지 시차(Lag) 반복
+            for lag in range(7):
+                df_temp = df_corr_sorted.copy()
+                
+                # 핵심 로직: 유가 데이터를 lag 개월만큼 뒤로 미루기
+                df_temp['GASOLINE_PRICE'] = df_temp['GASOLINE_PRICE'].shift(lag)
+                df_temp['DIESEL_PRICE'] = df_temp['DIESEL_PRICE'].shift(lag)
+                
+                # 데이터를 미루면서 생긴 빈칸(결측치) 제거
+                df_temp = df_temp.dropna()
+                
+                # 빈 데이터프레임이 아닐 경우에만 상관계수 계산
+                if not df_temp.empty:
+                    corr_m = df_temp.drop(columns=['DATE']).corr()
+                    
+                    # 선택된 각 차종별로 휘발유/경유 가격과의 상관계수 추출하여 리스트에 저장
+                    for fuel in selected_fuels:
+                        if fuel in corr_m.columns:
+                            lag_results.append({
+                                '시차': f'{lag}개월 뒤',
+                                '차종': fuel,
+                                '기준': '휘발유 가격',
+                                '상관계수': corr_m.loc['GASOLINE_PRICE', fuel]
+                            })
+                            lag_results.append({
+                                '시차': f'{lag}개월 뒤',
+                                '차종': fuel,
+                                '기준': '경유 가격',
+                                '상관계수': corr_m.loc['DIESEL_PRICE', fuel]
+                            })
+
+            # 수집된 결과를 데이터프레임으로 변환
+            df_lag_corr = pd.DataFrame(lag_results)
+
+            # 시각화를 위해 휘발유 가격 기준 데이터만 필터링 (필요시 경유로 변경 가능)
+            df_lag_gas = df_lag_corr[df_lag_corr['기준'] == '휘발유 가격']
+            
+            # 시차에 따른 상관계수 변화 추이를 선 그래프로 시각화
+            fig_lag = px.line(df_lag_gas, x='시차', y='상관계수', color='차종', markers=True,
+                              title='휘발유 가격 변동이 N개월 뒤 차종별 등록 증감에 미치는 영향',
+                              labels={'시차': '유가 변동 이후 경과 시간', '상관계수': '피어슨 상관계수'})
+            
+            # --- 수정된 부분: Y축 범위를 -0.5 ~ 0.5로 축소 ---
+            fig_lag.update_yaxes(range=[-0.5, 0.5], zeroline=True, zerolinewidth=2, zerolinecolor='black')
+            
+            # 상관계수 범위 고정 (-1 ~ 1) 및 Y축 0 기준선 추가
+            fig_lag.update_yaxes(range=[-1, 1], zeroline=True, zerolinewidth=2, zerolinecolor='black')
+            st.plotly_chart(fig_lag, use_container_width=True)
 
     # ── 차종·용도 현황 ──
     elif selected_tab == "차종·용도 현황":
@@ -283,6 +479,3 @@ def page_analysis():
     # st.subheader("상세 데이터")
     # with st.container(border=True):
     #     st.write("필터링된 데이터 테이블이 들어갑니다.")
-    
-    st.markdown("###")
-    st.markdown('<div class="double-divider"></div>', unsafe_allow_html=True)
