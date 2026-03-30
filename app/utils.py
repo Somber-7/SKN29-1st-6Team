@@ -159,6 +159,7 @@ def inject_global_css():
         height: 4px;
         margin: 12px 0 18px 0;
     }
+<<<<<<< HEAD
     
     / * -- 차트 영역 -- * /
     .chart-card {
@@ -182,5 +183,12 @@ def inject_global_css():
         border-radius: 16px;
         overflow: hidden;
     }                
+=======
+
+    .svg-container {
+        border-radius: 18px;
+    }
+
+>>>>>>> 6753bdbb00f4176c8ee5b23fd1b21bd1c43513c6
     </style>
     """, unsafe_allow_html=True)
