@@ -14,11 +14,7 @@ from app.db_connect import (
     get_national_average_fuel_price_trend
 )
 
-<<<<<<< HEAD
 DASHBOARD_TABS = ["유가 추이", "연료별 현황", "차종·용도 현황", "지역별 현황"]
-=======
-DASHBOARD_TABS = ["개요", "유가 추이", "연료별 현황", "차종 현황", "용도 현황", "지역별 현황"]
->>>>>>> 6753bdbb00f4176c8ee5b23fd1b21bd1c43513c6
 
 def load_dynamic_options():
     """
@@ -177,7 +173,7 @@ def page_analysis():
         """, unsafe_allow_html=True)
         st.divider()
         st.markdown("##")
-        st.header("📌 대시보드 필터")
+        st.header("📌 조건 필터")
 
         if selected_tab == "유가 추이":
             year_range = st.slider("기간 선택", min_value=2021, max_value=2026, value=(2021, 2026))
