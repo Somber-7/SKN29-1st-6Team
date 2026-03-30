@@ -98,6 +98,7 @@ def inject_global_css():
         font-weight: 700;
         margin-bottom: 12px;
     }
+
     </style>
     """, unsafe_allow_html=True)
 
@@ -172,6 +173,8 @@ def render_page_header(hero_html: str):
     render_high()
     render_header()
     render_top_nav()
+    st.divider()
+    st.divider()
     st.markdown(hero_html, unsafe_allow_html=True)
     
 
