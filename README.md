@@ -2,7 +2,7 @@
 > **전국 5개년 유가 흐름에 따른 하이브리드·전기차 등 5가지 연료 타입별 차량 등록 패턴 도출**
 
 ## 팀 소개
-|  |  |  | 
+| <img src="image/3_idots_1.png"> | <img src="image/3_idots_2.png"> |<img src="image/3_idots_3.png">  | 
 | :---: | :---: | :---: |
 |한경찬|임준|우석현|
 
@@ -68,3 +68,13 @@ SKN29-1st-6Team/
 ├── README.md                # 프로젝트 관련 상세 설명 문서
 └── main.py                  # Streamlit 메인 실행 파일
 ```
+
+## 데이터베이스 구조
+
+<img src="output/ERD_수집데이터.png" alt="ERD 다이어그램" width="800">
+
+- ---
+### 4. 프로젝트 결과
+- 
+- 
+- 
