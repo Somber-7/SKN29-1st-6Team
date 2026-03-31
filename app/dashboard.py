@@ -129,7 +129,11 @@ def page_dashboard():
                 st.markdown("**전국 휘발유 가격 추이**")
                 if not gasoline_data.empty:
                     fig_gas = px.line(gasoline_data, x='DATE', y='AVG_PRICE')
-                    fig_gas.update_layout(xaxis_title="기간", yaxis_title="평균 가격 (원/L)", paper_bgcolor='#f8fbfe', plot_bgcolor='#f8fbfe')
+                    fig_gas.update_layout(xaxis_title="기간",
+                                          yaxis_title="평균 가격 (원/L)",
+                                          paper_bgcolor='#f8fbfe',
+                                          plot_bgcolor='#f8fbfe',
+                                          margin=dict(r=50))
                     st.plotly_chart(fig_gas, use_container_width=True)
                 else:
                     st.info("휘발유 가격 데이터가 없습니다.")
@@ -138,7 +142,11 @@ def page_dashboard():
                 st.markdown("**전국 경유 가격 추이**")
                 if not diesel_data.empty:
                     fig_diesel = px.line(diesel_data, x='DATE', y='AVG_PRICE', color_discrete_sequence=['orange'])
-                    fig_diesel.update_layout(xaxis_title="기간", yaxis_title="평균 가격 (원/L)", paper_bgcolor='#f8fbfe', plot_bgcolor='#f8fbfe')
+                    fig_diesel.update_layout(xaxis_title="기간",
+                                             yaxis_title="평균 가격 (원/L)",
+                                             paper_bgcolor='#f8fbfe',
+                                             plot_bgcolor='#f8fbfe',
+                                             margin=dict(r=50))
                     st.plotly_chart(fig_diesel, use_container_width=True)
                 else:
                     st.info("경유 가격 데이터가 없습니다.")
@@ -406,7 +414,6 @@ def page_analysis():
                                           labels={'시차': '경과 시간', '상관계수': '상관계수'})
                     
                     fig_lag_gas.update_layout(paper_bgcolor='#f8fbfe', plot_bgcolor='#f8fbfe')
-                    # 중복된 코드 제거하고 범위 -0.5 ~ 0.5 로 완벽 고정
                     fig_lag_gas.update_yaxes(range=[-0.5, 0.5], zeroline=True, zerolinewidth=2, zerolinecolor='black')
                     
                     st.plotly_chart(fig_lag_gas, use_container_width=True)
@@ -419,7 +426,6 @@ def page_analysis():
                                              labels={'시차': '경과 시간', '상관계수': '상관계수'})
                     
                     fig_lag_diesel.update_layout(paper_bgcolor='#f8fbfe', plot_bgcolor='#f8fbfe')
-                    # 동일하게 범위 -0.5 ~ 0.5 로 완벽 고정
                     fig_lag_diesel.update_yaxes(range=[-0.5, 0.5], zeroline=True, zerolinewidth=2, zerolinecolor='black')
                     
                     st.plotly_chart(fig_lag_diesel, use_container_width=True)
@@ -468,15 +474,22 @@ def page_analysis():
             # 등록 대수 증감폭 라인 추가 (좌측 Y축) - y값을 REG_CNT_DIFF로 변경
             for type in selected_types:
                 df_type = df_reg_agg[df_reg_agg['TYPE_NM'] == type]
-                fig.add_trace(go.Scatter(x=df_type['DATE'], y=df_type['REG_CNT_DIFF'], mode='lines+markers', name=f'{type} 증감폭'))
+                fig.add_trace(go.Scatter(
+                    x=df_type['DATE'], 
+                    y=df_type['REG_CNT_DIFF'], 
+                    mode='lines+markers', 
+                    name=f'{type} 증감폭',
+                    fill='tozeroy', # 이 줄을 추가하면 Area Chart(면적 그래프)로 변경됩니다.
+                    opacity=0.5     # (선택 사항) 여러 차종이 겹칠 때 뒤에 있는 데이터가 가려지지 않도록 투명도를 줍니다.
+                ))
 
-            # 유가 라인 추가 (우측 Y축)
+            # 유가 라인 추가 (우측 Y축) - 기존과 동일
             fig.add_trace(go.Scatter(x=df_price_agg['DATE'], y=df_price_agg['GASOLINE_PRICE'], mode='lines', name='휘발유 가격', line=dict(dash='dot', color='tomato'), yaxis='y2'))
             fig.add_trace(go.Scatter(x=df_price_agg['DATE'], y=df_price_agg['DIESEL_PRICE'], mode='lines', name='경유 가격', line=dict(dash='dot', color='dodgerblue'), yaxis='y2'))
 
             fig.update_layout(
                 title='차종별 등록 대수 증감폭과 유가 추이 비교',
-                yaxis=dict(title='등록 대수 증감폭 (대)'), # Y축 이름 변경
+                yaxis=dict(title='등록 대수 증감폭 (대)'), 
                 yaxis2=dict(title='평균 유가 (원/L)', overlaying='y', side='right'),
                 legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
                 paper_bgcolor='#f8fbfe',
@@ -564,7 +577,6 @@ def page_analysis():
                                           labels={'시차': '경과 시간', '상관계수': '상관계수'})
                     
                     fig_lag_gas.update_layout(paper_bgcolor='#f8fbfe', plot_bgcolor='#f8fbfe')
-                    # 중복된 코드 제거하고 범위 -0.5 ~ 0.5 로 완벽 고정
                     fig_lag_gas.update_yaxes(range=[-0.5, 0.5], zeroline=True, zerolinewidth=2, zerolinecolor='black')
                     
                     st.plotly_chart(fig_lag_gas, use_container_width=True)
@@ -577,7 +589,6 @@ def page_analysis():
                                              labels={'시차': '경과 시간', '상관계수': '상관계수'})
                     
                     fig_lag_diesel.update_layout(paper_bgcolor='#f8fbfe', plot_bgcolor='#f8fbfe')
-                    # 동일하게 범위 -0.5 ~ 0.5 로 완벽 고정
                     fig_lag_diesel.update_yaxes(range=[-0.5, 0.5], zeroline=True, zerolinewidth=2, zerolinecolor='black')
                     
                     st.plotly_chart(fig_lag_diesel, use_container_width=True)
@@ -623,22 +634,31 @@ def page_analysis():
             # --- 이중 축 차트 생성 ---
             fig = go.Figure()
 
-            # 등록 대수 증감폭 라인 추가 (좌측 Y축) - y값을 REG_CNT_DIFF로 변경
             for usage in selected_usages:
                 df_usage = df_reg_agg[df_reg_agg['USAGE_NM'] == usage]
-                fig.add_trace(go.Scatter(x=df_usage['DATE'], y=df_usage['REG_CNT_DIFF'], mode='lines+markers', name=f'{usage} 증감폭'))
+                fig.add_trace(go.Waterfall(
+                    x=df_usage['DATE'], 
+                    y=df_usage['REG_CNT_DIFF'], 
+                    measure=['relative'] * len(df_usage),
+                    name=f'{usage} 증감폭',
+                    orientation='v',
+                    decreasing=dict(marker=dict(color='blue')),
+                    increasing=dict(marker=dict(color='red')),
+                    totals=dict(marker=dict(color='gray'))
+                ))
 
-            # 유가 라인 추가 (우측 Y축)
+            # 유가 라인 추가 (우측 Y축) - 기존과 동일
             fig.add_trace(go.Scatter(x=df_price_agg['DATE'], y=df_price_agg['GASOLINE_PRICE'], mode='lines', name='휘발유 가격', line=dict(dash='dot', color='tomato'), yaxis='y2'))
             fig.add_trace(go.Scatter(x=df_price_agg['DATE'], y=df_price_agg['DIESEL_PRICE'], mode='lines', name='경유 가격', line=dict(dash='dot', color='dodgerblue'), yaxis='y2'))
 
             fig.update_layout(
                 title='용도별 등록 대수 증감폭과 유가 추이 비교',
-                yaxis=dict(title='등록 대수 증감폭 (대)'), # Y축 이름 변경
+                yaxis=dict(title='등록 대수 증감폭 (대)'), 
                 yaxis2=dict(title='평균 유가 (원/L)', overlaying='y', side='right'),
                 legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
                 paper_bgcolor='#f8fbfe',
-                plot_bgcolor='#f8fbfe'
+                plot_bgcolor='#f8fbfe',
+                waterfallmode='group' # 여러 용도(예: 영업용, 비영업용)가 선택되었을 때 막대가 겹치지 않고 나란히 보이게 함
             )
             st.plotly_chart(fig, use_container_width=True)
 
