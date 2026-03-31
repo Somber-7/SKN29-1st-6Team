@@ -129,7 +129,7 @@ def page_dashboard():
             st.subheader("전국 휘발유 가격 추이")
             with st.container(border=True):
                 if not gasoline_data.empty:
-                    fig_gas = px.line(gasoline_data, x='DATE', y='AVG_PRICE')
+                    fig_gas = px.line(gasoline_data, x='DATE', y='AVG_PRICE', color_discrete_sequence=['crimson'])
                     fig_gas.update_layout(xaxis_title="기간",
                                           yaxis_title="평균 가격 (원/L)",
                                           paper_bgcolor='#f8fbfe',
@@ -142,7 +142,7 @@ def page_dashboard():
             st.subheader("전국 경유 가격 추이")
             with st.container(border=True):
                 if not diesel_data.empty:
-                    fig_diesel = px.line(diesel_data, x='DATE', y='AVG_PRICE', color_discrete_sequence=['orange'])
+                    fig_diesel = px.line(diesel_data, x='DATE', y='AVG_PRICE', color_discrete_sequence=['royalblue'])
                     fig_diesel.update_layout(xaxis_title="기간",
                                              yaxis_title="평균 가격 (원/L)",
                                              paper_bgcolor='#f8fbfe',
@@ -196,34 +196,7 @@ def page_analysis():
             selected_usages = st.multiselect("용도 선택", USAGE_OPTIONS, placeholder="용도를 선택하세요")
         elif selected_tab == "지역별 현황":
             selected_regions = st.multiselect("지역 선택", REGION_OPTIONS, placeholder="지역을 선택하세요")
-        # else:
-        #     st.caption("개요 탭은 별도 필터 없이 전체 현황을 보여줍니다.")
 
-    # ── 개요 ──
-    # if selected_tab == "개요":
-    #     st.write("")
-    #     st.subheader("⭐ 전체 현황 개요")
-    #     cols = st.columns(6)
-    #     for col, label, val in zip(
-    #         cols,
-    #         ["전체 등록 대수", "연료", "차종", "유가", "지역", "OO"],
-    #         ["예시값", "5", "3", "1", "17", "13"],
-    #     ):
-    #         with col:
-    #             with st.container(border=True):
-    #                 st.markdown(label)
-    #                 st.write(val)
-    #     c1, c2 = st.columns(2)
-    #     with c1:
-    #         with st.container(border=True):
-    #             st.markdown("**전체 등록 현황 요약 차트 영역**")
-    #             st.write("예: 도넛차트 / 전체 분포 차트")
-    #     with c2:
-    #         with st.container(border=True):
-    #             st.markdown("**주요 비중 비교 차트 영역**")
-    #             st.write("예: 연료별 비중 / 차종별 비중")
-
-    # ── 유가 추이 ──
     if selected_tab == "유가 추이":
         st.subheader("💰 유가 추이")
         if not selected_regions:
@@ -313,17 +286,49 @@ def page_analysis():
                 DIESEL_PRICE=('DIESEL_PRICE', 'mean')
             ).reset_index()
 
+                # 연료별 색상 매핑
+            fuel_color_map = {
+                '휘발유': '#F59E0B', 
+                '경유': '#64748B', 
+                '전기': '#10B981', 
+                '하이브리드(휘발유+전기)': '#EC4899', 
+                '하이브리드(경유+전기)': '#06B6D4'
+            }
+
             # --- 이중 축 차트 생성 ---
             fig = go.Figure()
 
-            # 등록 대수 증감폭 라인 추가 (좌측 Y축) - y값을 REG_CNT_DIFF로 변경
+            # 등록 대수 증감폭 라인 추가 (좌측 Y축)
             for fuel in selected_fuels:
                 df_fuel = df_reg_agg[df_reg_agg['FUEL_NM'] == fuel]
-                fig.add_trace(go.Scatter(x=df_fuel['DATE'], y=df_fuel['REG_CNT_DIFF'], mode='lines+markers', name=f'{fuel} 증감폭'))
+                
+                # 딕셔너리에서 연료명(fuel)에 해당하는 색상을 고정으로 할당
+                fig.add_trace(go.Scatter(
+                    x=df_fuel['DATE'], 
+                    y=df_fuel['REG_CNT_DIFF'], 
+                    mode='lines+markers', 
+                    name=f'{fuel} 증감폭',
+                    line=dict(color=fuel_color_map[fuel]) # 👈 지정한 색상이 여기서 적용됩니다.
+                ))
 
-            # 유가 라인 추가 (우측 Y축)
-            fig.add_trace(go.Scatter(x=df_price_agg['DATE'], y=df_price_agg['GASOLINE_PRICE'], mode='lines', name='휘발유 가격', line=dict(dash='dot', color='tomato'), yaxis='y2'))
-            fig.add_trace(go.Scatter(x=df_price_agg['DATE'], y=df_price_agg['DIESEL_PRICE'], mode='lines', name='경유 가격', line=dict(dash='dot', color='dodgerblue'), yaxis='y2'))
+            # 유가 라인 추가 (우측 Y축) - 진한 실선과 두께(width=3)로 기준선 강조
+            fig.add_trace(go.Scatter(
+                x=df_price_agg['DATE'], 
+                y=df_price_agg['GASOLINE_PRICE'], 
+                mode='lines', 
+                name='휘발유 가격', 
+                line=dict(color='crimson', width=3),
+                yaxis='y2'
+            ))
+            
+            fig.add_trace(go.Scatter(
+                x=df_price_agg['DATE'], 
+                y=df_price_agg['DIESEL_PRICE'], 
+                mode='lines', 
+                name='경유 가격', 
+                line=dict(color='royalblue', width=3),
+                yaxis='y2'
+            ))
 
             fig.update_layout(
                 title='연료별 등록 대수 증감폭과 유가 추이 비교',
@@ -472,22 +477,45 @@ def page_analysis():
             # --- 이중 축 차트 생성 ---
             fig = go.Figure()
 
-            # 등록 대수 증감폭 라인 추가 (좌측 Y축) - y값을 REG_CNT_DIFF로 변경
+            type_color_map = {
+                            '승용': '#10B981',
+                            '승합': '#8B5CF6',
+                            '화물': '#F59E0B',
+                            '특수': '#64748B'
+                        }
+
+            # 등록 대수 증감폭 라인 추가 (좌측 Y축)
             for type in selected_types:
                 df_type = df_reg_agg[df_reg_agg['TYPE_NM'] == type]
+                
                 fig.add_trace(go.Scatter(
                     x=df_type['DATE'], 
                     y=df_type['REG_CNT_DIFF'], 
                     mode='lines+markers', 
                     name=f'{type} 증감폭',
-                    fill='tozeroy', # 이 줄을 추가하면 Area Chart(면적 그래프)로 변경됩니다.
-                    opacity=0.5     # (선택 사항) 여러 차종이 겹칠 때 뒤에 있는 데이터가 가려지지 않도록 투명도를 줍니다.
+                    fill='tozeroy', 
+                    opacity=0.5, 
+                    line=dict(color=type_color_map[type]) 
                 ))
 
-            # 유가 라인 추가 (우측 Y축) - 기존과 동일
-            fig.add_trace(go.Scatter(x=df_price_agg['DATE'], y=df_price_agg['GASOLINE_PRICE'], mode='lines', name='휘발유 가격', line=dict(dash='dot', color='tomato'), yaxis='y2'))
-            fig.add_trace(go.Scatter(x=df_price_agg['DATE'], y=df_price_agg['DIESEL_PRICE'], mode='lines', name='경유 가격', line=dict(dash='dot', color='dodgerblue'), yaxis='y2'))
-
+            # 유가 라인
+            fig.add_trace(go.Scatter(
+                x=df_price_agg['DATE'], 
+                y=df_price_agg['GASOLINE_PRICE'], 
+                mode='lines', 
+                name='휘발유 가격', 
+                line=dict(color='crimson', width=3),
+                yaxis='y2'
+            ))
+            
+            fig.add_trace(go.Scatter(
+                x=df_price_agg['DATE'], 
+                y=df_price_agg['DIESEL_PRICE'], 
+                mode='lines', 
+                name='경유 가격', 
+                line=dict(color='royalblue', width=3),
+                yaxis='y2'
+            ))
             fig.update_layout(
                 title='차종별 등록 대수 증감폭과 유가 추이 비교',
                 yaxis=dict(title='등록 대수 증감폭 (대)'), 
@@ -647,10 +675,24 @@ def page_analysis():
                     increasing=dict(marker=dict(color='red')),
                     totals=dict(marker=dict(color='gray'))
                 ))
-
-            # 유가 라인 추가 (우측 Y축) - 기존과 동일
-            fig.add_trace(go.Scatter(x=df_price_agg['DATE'], y=df_price_agg['GASOLINE_PRICE'], mode='lines', name='휘발유 가격', line=dict(dash='dot', color='tomato'), yaxis='y2'))
-            fig.add_trace(go.Scatter(x=df_price_agg['DATE'], y=df_price_agg['DIESEL_PRICE'], mode='lines', name='경유 가격', line=dict(dash='dot', color='dodgerblue'), yaxis='y2'))
+            # 유가 라인
+            fig.add_trace(go.Scatter(
+                x=df_price_agg['DATE'], 
+                y=df_price_agg['GASOLINE_PRICE'], 
+                mode='lines', 
+                name='휘발유 가격', 
+                line=dict(color='crimson', width=3),
+                yaxis='y2'
+            ))
+            
+            fig.add_trace(go.Scatter(
+                x=df_price_agg['DATE'], 
+                y=df_price_agg['DIESEL_PRICE'], 
+                mode='lines', 
+                name='경유 가격', 
+                line=dict(color='royalblue', width=3),
+                yaxis='y2'
+            ))
 
             fig.update_layout(
                 title='용도별 등록 대수 증감폭과 유가 추이 비교',
