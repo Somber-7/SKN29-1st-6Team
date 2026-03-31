@@ -138,7 +138,10 @@ def _render_faq_body(table: str, dual: bool, tab_key: str):
                 label = f"[{faq['cat']}] {faq['subject']}"
 
             with st.expander(label, expanded=False):
-                st.write(faq["content"])
+                st.markdown(
+                    f'<div style="line-height:3.0;">{faq["content"]}</div>',
+                    unsafe_allow_html=True,
+                )
 
         # ── 페이지네이션 컨트롤 ─────────────────────────────
         GROUP = 5

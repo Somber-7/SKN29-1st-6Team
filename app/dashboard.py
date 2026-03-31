@@ -84,9 +84,10 @@ def page_dashboard():
 
     STAT_YM = '202602'
     c1, c2 = st.columns(2)
+    
     with c1:
+        st.subheader("연료별 등록 현황")
         with st.container(border=True):
-            st.markdown("**연료별 등록 현황**")
             # 함수 파라미터 제거됨
             fuel_data = get_fuel_registration_data(STAT_YM) 
             
@@ -100,8 +101,8 @@ def page_dashboard():
                 st.info("연료별 등록 현황 데이터가 없습니다.")
                 
     with c2:
+        st.subheader("차종별 등록 현황")
         with st.container(border=True):
-            st.markdown("**차종별 등록 현황**")
             # 함수 파라미터 제거됨
             type_data = get_type_registration_data(STAT_YM) 
             
@@ -125,8 +126,8 @@ def page_dashboard():
         diesel_data = price_data[price_data['FUEL_NM'] == '경유']
 
         with t1:
+            st.subheader("전국 휘발유 가격 추이")
             with st.container(border=True):
-                st.markdown("**전국 휘발유 가격 추이**")
                 if not gasoline_data.empty:
                     fig_gas = px.line(gasoline_data, x='DATE', y='AVG_PRICE')
                     fig_gas.update_layout(xaxis_title="기간", yaxis_title="평균 가격 (원/L)", paper_bgcolor='#f8fbfe', plot_bgcolor='#f8fbfe')
@@ -134,8 +135,8 @@ def page_dashboard():
                 else:
                     st.info("휘발유 가격 데이터가 없습니다.")
         with t2:
+            st.subheader("전국 경유 가격 추이")
             with st.container(border=True):
-                st.markdown("**전국 경유 가격 추이**")
                 if not diesel_data.empty:
                     fig_diesel = px.line(diesel_data, x='DATE', y='AVG_PRICE', color_discrete_sequence=['orange'])
                     fig_diesel.update_layout(xaxis_title="기간", yaxis_title="평균 가격 (원/L)", paper_bgcolor='#f8fbfe', plot_bgcolor='#f8fbfe')
