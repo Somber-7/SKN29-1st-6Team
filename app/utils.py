@@ -39,7 +39,7 @@ def render_high():
             go_to("main")
 
 def render_header():
-    image_base64 = get_image_base64("image/img_ex4.jpg")
+    image_base64 = get_image_base64("image/main.jpg")
     st.markdown(f"""
         <div style="margin-bottom: 12px;">
             <img src="data:image/jpg;base64,{image_base64}"
