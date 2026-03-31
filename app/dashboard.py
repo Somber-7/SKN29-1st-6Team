@@ -14,7 +14,7 @@ from app.db_connect import (
     get_national_average_fuel_price_trend
 )
 
-DASHBOARD_TABS = ["유가 추이", "연료별 현황", "차종·용도 현황", "지역별 현황"]
+DASHBOARD_TABS = ["유가 추이", "연료별 현황", "차종 현황" ,"용도 현황"]
 
 def load_dynamic_options():
     """
