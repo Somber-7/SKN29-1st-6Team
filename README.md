@@ -67,7 +67,6 @@ SKN29-1st-6Team/
 │   ├── hyundai.png          # Q&A 페이지 현대 로고 이미지
 │   ├── kgm.png              # Q&A 페이지 KGM 로고 이미지
 │   └── kia.png              # Q&A 페이지 기아 로고 이미지
-│
 ├── output/
 │   ├── 테이블명세서_데이터베이스설계문서.xlsx  # DB 테이블 명세서
 │   ├── SKN29_1st_6Team_발표자료.pptx  # 수행 과제 최종 발표자료
