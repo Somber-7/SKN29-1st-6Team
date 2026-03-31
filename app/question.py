@@ -1,4 +1,5 @@
 import streamlit as st
+from PIL import Image
 from app.utils import render_page_header
 from app.db_connect import (
     get_faq_cat1_options,
@@ -21,7 +22,7 @@ _TAB_CONFIG = {
 }
 
 _TAB_ICON = {
-    "기아": "⭐", "제네시스": "💰", "현대": "⛽", "KGM": "🚘"
+    "기아": "image/kia.png", "제네시스": "image/genesis.png", "현대": "image/hyundai.png", "KGM": "image/KGM.png"
 }
 
 
@@ -201,10 +202,15 @@ def page_faq():
     </div>
     """)
 
+
     selected_tab = st.segmented_control(None, FAQ_TABS, default="기아")
     st.write("")
-    st.subheader(f"{_TAB_ICON.get(selected_tab, '')} {selected_tab}")
-
+    image = Image.open(_TAB_ICON.get(selected_tab, ''))
+    col1, col2 = st.columns([1, 25], vertical_alignment="center")
+    with col1:
+        st.image(image, "", width = 75)
+    with col2:
+        st.subheader(f"{selected_tab}")
     cfg = _TAB_CONFIG[selected_tab]
     _render_faq_body(
         table=cfg["table"],
