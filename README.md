@@ -62,10 +62,17 @@ SKN29-1st-6Team/
 │   ├── price_upload.py      # 유가 정보를 DB에 업로드하는 스크립트
 │   └── xlsx/                # 월별 자동차 등록 통계 및 유가 데이터 (Raw Data)
 ├── image/
-│   └── main.png             # 메인 화면 내 사용 이미지
+│   ├── main.png             # 메인 화면 내 사용 이미지
+│   ├── genesis.png          # Q&A 페이지 제네시스 로고 이미지
+│   ├── hyundai.png          # Q&A 페이지 현대 로고 이미지
+│   ├── kgm.png              # Q&A 페이지 KGM 로고 이미지
+│   └── kia.png              # Q&A 페이지 기아 로고 이미지
+│
 ├── output/
 │   ├── 테이블명세서_데이터베이스설계문서.xlsx  # DB 테이블 명세서
-│   └── ERD_수집데이터.png      # 데이터베이스 ERD 다이어그램
+│   ├── SKN29_1st_6Team_발표자료.pptx  # 수행 과제 최종 발표자료
+│   ├── SKN29_1st_6Team.pdf  # Streamlit 실행화면 캡쳐 PDF
+│   └── ERD_수집데이터.png    # 데이터베이스 ERD 다이어그램
 ├── sql/
 │   ├── faq_data.sql         # FAQ 초기 데이터 SQL
 │   ├── faq_table.sql        # FAQ 테이블 생성 SQL
